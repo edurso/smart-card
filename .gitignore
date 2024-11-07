@@ -13,6 +13,7 @@ RemoteSystemsTempFiles/
 *.launch
 
 cmake*/
+**/.idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,clion+all,cmake,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,clion+all,cmake,visualstudiocode,jetbrains
