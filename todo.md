@@ -3,7 +3,7 @@
 
 ## NFC
 - [ ] (All) Research how this protocol works - make base slide deck
-- [ ] (Eric/Luke) Arduino NFC Read/Write
+- [x] (Eric/Luke) Arduino NFC Read/Write
 - [ ] (Eric/Luke) STM32 NFC Read/Write
 
 ## LCD Touchscreen
@@ -17,7 +17,7 @@
 - [ ] (Eric?) Build simple, abstract interface for reading/writing IMU data 
 
 ## Debugging
-- [ ] (Eric) Build quick & dirty debugging messaging service via UART
+- [x] (Eric) Build quick & dirty debugging messaging service via UART
 
 ## Report
 - [ ] () Draft milestone 1 report

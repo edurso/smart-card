@@ -5,7 +5,7 @@
 | Component               | Device Name | Protocol |
 |-------------------------|-------------|----------|
 | STM32                   | STM32L432KC | -        |
-| NFC Tags                | RC522       | I2C      |
+| NFC Tags                | RC522       | SPI      |
 | LCD Touchscreen Display | ILI9341     | SPI      |
 | IMU                     | GY511       | I2C      |
 | Speaker                 | -           | DAC      |
