@@ -124,7 +124,10 @@ namespace card {
         return rx;
     }
     
-    class RC522 {
+    /**
+     * Object Representing the RC522 (MFRC522 Chip)
+     */
+    class RFID {
         SPI_HandleTypeDef* hspi{};
         GPIOPin select_pin{};
         GPIOPin reset_pin{};
@@ -197,8 +200,8 @@ namespace card {
         }
 
     public:
-        RC522() = default;
-        RC522(SPI_HandleTypeDef* hspi, const GPIOPin select_pin, const GPIOPin reset_pin)
+        RFID() = default;
+        RFID(SPI_HandleTypeDef* hspi, const GPIOPin select_pin, const GPIOPin reset_pin)
         : hspi(hspi), select_pin(select_pin), reset_pin{reset_pin} {
             deselect();
             reset_pin.write(GPIO_PIN_SET);

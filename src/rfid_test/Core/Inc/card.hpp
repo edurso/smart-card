@@ -3,12 +3,14 @@
 #include "gpio.hpp"
 #include "debug.hpp"
 #include "hw.hpp"
-#include "rc522.hpp"
+#include "rfid.hpp"
+#include "imu.hpp"
+
 
 namespace card {
 
     class SmartCard {
-        RC522 rfid{};
+        RFID rfid{};
         TIM_HandleTypeDef* card_read_timer{};
         bool initialized{};
 
