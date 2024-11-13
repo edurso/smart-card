@@ -110,6 +110,7 @@
 //-----------------------------------------------
 #define MAX_LEN 16
 
+
 namespace card {
     
     inline auto check_spi(const HAL_StatusTypeDef status) -> void {

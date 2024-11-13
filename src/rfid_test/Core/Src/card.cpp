@@ -19,33 +19,26 @@ extern I2C_HandleTypeDef hi2c1;
 namespace card {
 
 	SmartCard smart_card;
-	IMU imu;
 
 	auto init_callback() -> void {
-		// smart_card = SmartCard(
-		// 	SPI_H,
-		// 	CARD_READ_TIMER,
-		// 	GPIOPin(GPIOA, GPIO_PIN_0),
-		// 	GPIOPin(GPIOA, GPIO_PIN_4)
-		// );
-		// smart_card.init();
-		debug("Initializing!!!!!!!!!");
-
-		check(HAL_TIM_Base_Start_IT(CARD_READ_TIMER));
-		imu.init();
+		smart_card = SmartCard(
+			SPI_H,
+			I2C_H,
+			CARD_READ_TIMER,
+			GPIOPin(GPIOA, GPIO_PIN_0),
+			GPIOPin(GPIOA, GPIO_PIN_4)
+		);
+		smart_card.init();
 	}
 
 	auto card_read_callback() -> void {
-		// smart_card.card_read();
-		auto [x, y, z]= imu.read();
-		debugf("\tX Position: %d\n\r", x);
-		debugf("\tY Position: %d\n\r", y);
-		debugf("\tZ Position: %d\n\r", z);
-		debug("");
+		// debug("Periodic Callback");
+		smart_card.card_read();
 	}
 
 	auto imu_interrupt_callback() -> void {
-		debug("Fired");
+		smart_card.fired();
+		// smart_card.card_read();
 	}
 
 }

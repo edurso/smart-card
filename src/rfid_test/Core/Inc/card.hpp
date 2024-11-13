@@ -11,7 +11,8 @@ namespace card {
 
     class SmartCard {
         RFID rfid{};
-        TIM_HandleTypeDef* card_read_timer{};
+        IMU imu{};
+        TIM_HandleTypeDef* timer{};
         bool initialized{};
 
         auto end_card_read() const -> void {
@@ -25,8 +26,8 @@ namespace card {
 
     public:
         SmartCard() = default;
-        SmartCard(SPI_HandleTypeDef* hspi, TIM_HandleTypeDef* tim, const GPIOPin select_pin, const GPIOPin reset_pin)
-        : rfid{hspi, select_pin, reset_pin}, card_read_timer{tim}, initialized{false} {
+        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* tim, const GPIOPin select_pin, const GPIOPin reset_pin)
+        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, timer{tim}, initialized{false} {
         }
 
         auto init() -> void {
@@ -34,11 +35,15 @@ namespace card {
             debug("Initializing...");
 
             // Start Timer Interrupts
-            check(HAL_TIM_Base_Start_IT(card_read_timer));
+            check(HAL_TIM_Base_Start_IT(timer));
 
             // Initialize RFID Module
             debug("Initializing RFID...");
             rfid.init();
+
+            // Initialize IMU
+            debug("Initializing IMU...");
+            imu.init();
 
             debug("Initialized\n\r");
             initialized = true;
@@ -75,6 +80,10 @@ namespace card {
 
             // Reset For Next Poll
             end_card_read();
+        }
+
+        auto fired() -> void {
+            imu.fired();
         }
 
     };
