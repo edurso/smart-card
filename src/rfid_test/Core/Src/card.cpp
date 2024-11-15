@@ -37,7 +37,7 @@ namespace card {
 	}
 
 	auto imu_interrupt_callback() -> void {
-		smart_card.fired();
+		// smart_card.fired();
 		// smart_card.card_read();
 	}
 
