@@ -38,24 +38,24 @@ namespace card {
 	auto card_read_callback() -> void {
 		if (!initialized) return;
 
-		if (!write && (count > 10)) {
-			write = true;
-
-			const auto data = "You just got rick rolled hahahahahahahahahahaha";
-			// const auto data = "Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you";
-
-			if (const auto result = smart_card.card_write(data)) {
-				if (*result == SUCCESS) {
-					debug("Write successful");
-				} else {
-					debug("Failed to write to card");
-				}
-			} else {
-				debug("Could not detect card to write");
-				write = false;
-			}
-
-		}
+		// if (!write && (count > 10)) {
+		// 	write = true;
+		//
+		// 	const auto data = "You just got rick rolled hahahahahahahahahahaha";
+		// 	// const auto data = "Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you";
+		//
+		// 	if (const auto result = smart_card.card_write(data)) {
+		// 		if (*result == SUCCESS) {
+		// 			debug("Write successful");
+		// 		} else {
+		// 			debug("Failed to write to card");
+		// 		}
+		// 	} else {
+		// 		debug("Could not detect card to write");
+		// 		write = false;
+		// 	}
+		//
+		// }
 		// debug("Periodic Callback");
 		if (const auto data = smart_card.card_read()) {
 			debug("Card Found: \"" + *data + "\"");
