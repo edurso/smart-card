@@ -166,7 +166,7 @@ namespace card {
         }
 
         auto read(std::uint8_t addr, std::uint32_t count, std::uint8_t *data, const std::uint8_t rx_align) const -> void {
-            addr = 0x80 | (addr & 0x7E); // TODO shift by 1?
+            addr = 0x80 | (addr & 0x7E);
             std::uint8_t index = 0;
             if (count == 0) return;
 
@@ -199,62 +199,6 @@ namespace card {
         auto mask_clear(const std::uint8_t addr, const std::uint8_t mask) const -> void {
             write(addr, read(addr) & ~mask);
         }
-
-    public:
-        RFID() = default;
-        RFID(SPI_HandleTypeDef* hspi, const GPIOPin select_pin, const GPIOPin reset_pin)
-        : hspi(hspi), select_pin(select_pin), reset_pin{reset_pin} {
-            deselect();
-            reset_pin.write(GPIO_PIN_SET);
-        }
-
-        auto test_io() const -> void {
-            constexpr std::uint8_t addr = 0x2C;
-            constexpr std::uint8_t data = 0xDE;
-
-            debug(std::to_string(addr) + ": " + std::to_string(read(addr)));
-            write(addr, data);
-            debug(std::to_string(addr) + ": " + std::to_string(read(addr)));
-        }
-
-        auto antenna_on() const -> void {
-            mask_set(TxControlReg, 0x03);
-        }
-
-        auto antenna_off() const -> void {
-            mask_clear(TxControlReg, 0x03);
-        }
-
-        auto reset() const -> void {
-            write(CommandReg, PCD_RESETPHASE);
-        }
-
-        auto init() const -> void {
-            reset();
-
-            write(TModeReg, 0x8D);
-            write(TPrescalerReg, 0x3E);
-            write(TReloadRegL, 30);
-            write(TReloadRegH, 0);
-            write(TxAutoReg, 0x40);
-            write(ModeReg, 0x3D);
-
-            antenna_on();
-        }
-
-        auto request(const std::uint8_t req_mode, std::uint8_t *tag_type) const -> std::uint8_t {
-            std::uint32_t back_bits;
-            write(BitFramingReg, 0x07);
-            tag_type[0] = req_mode;
-
-            std::uint8_t status = to_card(PCD_TRANSCEIVE, tag_type, 1, tag_type, &back_bits);
-            if ((status != MI_OK) || (back_bits != 0x10)) {
-                status = MI_ERR;
-            }
-
-            return status;
-        }
-
 
         auto to_card(const std::uint8_t command, const std::uint8_t *send_data, const std::uint8_t send_len, std::uint8_t *back_data, std::uint32_t *back_len) const -> std::uint8_t {
 
@@ -329,28 +273,6 @@ namespace card {
             return status;
         }
 
-        auto anticoll(std::uint8_t *ser_num) const -> std::uint8_t {
-            std::uint32_t un_len;
-
-            write(BitFramingReg, 0x00);
-
-            ser_num[0] = PICC_ANTICOLL;
-            ser_num[1] = 0x20;
-            std::uint8_t status = to_card(PCD_TRANSCEIVE, ser_num, 2, ser_num, &un_len);
-
-            if (status == MI_OK) {
-                std::uint8_t i;
-                std::uint8_t ser_num_check = 0;
-                for (i = 0 ; i < 4 ; i++) {
-                    ser_num_check ^= ser_num[i];
-                }
-                if (ser_num_check != ser_num[i]) status = MI_ERR;
-            }
-
-            return status;
-        }
-
-
         auto calc_crc(const std::uint8_t *p_in_data, const std::uint8_t len, std::uint8_t *p_out_data) const -> void {
             std::uint8_t i, n;
 
@@ -372,6 +294,82 @@ namespace card {
 
             p_out_data[0] = read(CRCResultRegL);
             p_out_data[1] = read(CRCResultRegM);
+        }
+
+    public:
+        RFID() = default;
+        RFID(SPI_HandleTypeDef* hspi, const GPIOPin select_pin, const GPIOPin reset_pin)
+        : hspi(hspi), select_pin(select_pin), reset_pin{reset_pin} {
+            deselect();
+            reset_pin.write(GPIO_PIN_SET);
+        }
+
+        auto test_io() const -> void {
+            constexpr std::uint8_t addr = 0x2C;
+            constexpr std::uint8_t data = 0xDE;
+
+            debug(std::to_string(addr) + ": " + std::to_string(read(addr)));
+            write(addr, data);
+            debug(std::to_string(addr) + ": " + std::to_string(read(addr)));
+        }
+
+        auto antenna_on() const -> void {
+            mask_set(TxControlReg, 0x03);
+        }
+
+        auto antenna_off() const -> void {
+            mask_clear(TxControlReg, 0x03);
+        }
+
+        auto reset() const -> void {
+            write(CommandReg, PCD_RESETPHASE);
+        }
+
+        auto init() const -> void {
+            reset();
+
+            write(TModeReg, 0x8D);
+            write(TPrescalerReg, 0x3E);
+            write(TReloadRegL, 30);
+            write(TReloadRegH, 0);
+            write(TxAutoReg, 0x40);
+            write(ModeReg, 0x3D);
+
+            antenna_on();
+        }
+
+        auto request(const std::uint8_t req_mode, std::uint8_t *tag_type) const -> std::uint8_t {
+            std::uint32_t back_bits;
+            write(BitFramingReg, 0x07);
+            tag_type[0] = req_mode;
+
+            std::uint8_t status = to_card(PCD_TRANSCEIVE, tag_type, 1, tag_type, &back_bits);
+            if ((status != MI_OK) || (back_bits != 0x10)) {
+                status = MI_ERR;
+            }
+
+            return status;
+        }
+
+        auto anticoll(std::uint8_t *ser_num) const -> std::uint8_t {
+            std::uint32_t un_len;
+
+            write(BitFramingReg, 0x00);
+
+            ser_num[0] = PICC_ANTICOLL;
+            ser_num[1] = 0x20;
+            std::uint8_t status = to_card(PCD_TRANSCEIVE, ser_num, 2, ser_num, &un_len);
+
+            if (status == MI_OK) {
+                std::uint8_t i;
+                std::uint8_t ser_num_check = 0;
+                for (i = 0 ; i < 4 ; i++) {
+                    ser_num_check ^= ser_num[i];
+                }
+                if (ser_num_check != ser_num[i]) status = MI_ERR;
+            }
+
+            return status;
         }
 
         auto select_tag(const std::uint8_t *ser_num) const -> std::uint8_t {

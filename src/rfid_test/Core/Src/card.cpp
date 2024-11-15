@@ -19,6 +19,9 @@ extern I2C_HandleTypeDef hi2c1;
 namespace card {
 
 	SmartCard smart_card;
+	bool initialized{};
+	bool write{};
+	std::size_t count{};
 
 	auto init_callback() -> void {
 		smart_card = SmartCard(
@@ -29,11 +32,37 @@ namespace card {
 			GPIOPin(GPIOA, GPIO_PIN_4)
 		);
 		smart_card.init();
+		initialized = true;
 	}
 
 	auto card_read_callback() -> void {
+		if (!initialized) return;
+
+		if (!write && (count > 10)) {
+			write = true;
+
+			const auto data = "You just got rick rolled hahahahahahahahahahaha";
+			// const auto data = "Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you";
+
+			if (const auto result = smart_card.card_write(data)) {
+				if (*result == SUCCESS) {
+					debug("Write successful");
+				} else {
+					debug("Failed to write to card");
+				}
+			} else {
+				debug("Could not detect card to write");
+				write = false;
+			}
+
+		}
 		// debug("Periodic Callback");
-		smart_card.card_read();
+		if (const auto data = smart_card.card_read()) {
+			debug("Card Found: \"" + *data + "\"");
+		} else {
+			debug("No Card Found");
+		}
+		++count;
 	}
 
 	auto imu_interrupt_callback() -> void {

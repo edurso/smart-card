@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
+#include <optional>
 #include <vector>
 
 #include "gpio.hpp"
@@ -16,6 +18,11 @@ namespace card {
                                                     24, 25, 26, 28, 29, 30, 32, 33, 34, 36, 37, 38, 40, 41, 42,
                                                     44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 58, 60, 61, 62};
 
+    enum CardTransaction {
+        SUCCESS,
+        FAILURE,
+    };
+
     class SmartCard {
         RFID rfid{};
         IMU imu{};
@@ -24,11 +31,11 @@ namespace card {
 
         auto end_card_read() const -> void {
             // Reset For Next Poll
-            debug("Reset For Next Poll");
+            // debug("Reset For Next Poll");
             rfid.halt();
 
             // Add Newline To Debug Output
-            debug("\n\r");
+            // debug("\n\r");
         }
 
     public:
@@ -56,32 +63,27 @@ namespace card {
             initialized = true;
         }
 
-        auto card_read() const -> void {
-            if (!initialized) return;
+        [[nodiscard]] auto card_read() const -> std::optional<std::string> {
+            if (!initialized) return std::nullopt;
 
-            debug("Entering Card Read Callback");
+            std::string data;
             std::uint8_t str[MAX_LEN];
+
+            // Re-Initialize RFID Module
+            rfid.init();
 
             // Find Cards Present
             auto status = rfid.request(PICC_REQIDL, str);
-            if (status == MI_OK) {
-                debug("Card Found");
-                debug("\tType " + std::to_string(str[0]));
-            } else {
-                debug("No Card Found");
+            if (status != MI_OK) {
                 end_card_read();
-                return;
+                return std::nullopt;
             }
 
             // Get Card UID
             status = rfid.anticoll(str);
             if (status == MI_OK) {
-                debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
                 const auto capacity = rfid.select_tag(str);
-                debug("\tCard Capacity: " + std::to_string(capacity));
-
                 std::vector<std::string> block_values{};
-                std::string data;
 
                 for (const auto& block : blocks) {
                     std::string block_value = "Block " + std::to_string(block) + ": ";
@@ -91,8 +93,11 @@ namespace card {
                         process = rfid.read_data(block, block_data);
                         if (process == MI_OK) {
                             std::string line;
-                            for (const unsigned char i : block_data) line += (i == 0x00) ? ' ' : i;
-                            line = reduce(line);
+                            for (const unsigned char i : block_data) {
+                                if (i != 0x00) {
+                                    line += i;
+                                }
+                            }
                             block_value += line;
                             data += line;
                         } else {
@@ -104,16 +109,79 @@ namespace card {
                     block_values.push_back(block_value);
                 }
 
-                debug("\tCard Data: " + data);
-
             } else {
-                debug("\tIssue Resolving Card UID");
                 end_card_read();
-                return;
+                return std::nullopt;
             }
 
             // Reset For Next Poll
             end_card_read();
+            return data;
+        }
+
+        [[nodiscard]] auto card_write(const std::string& data) const -> std::optional<CardTransaction> {
+            if (!initialized) return std::nullopt;
+
+            constexpr std::uint8_t block_size = 16;
+            if (data.length() > (blocks.size() * block_size)) return std::nullopt;
+
+            std::uint8_t str[MAX_LEN];
+
+            // Re-Initialize RFID Module
+            rfid.init();
+
+            // Find Cards Present
+            auto status = rfid.request(PICC_REQIDL, str);
+            if (status != MI_OK) {
+                end_card_read();
+                return std::nullopt;
+            }
+
+            // Get Card UID
+            status = rfid.anticoll(str);
+            if (status == MI_OK) {
+                const auto capacity = rfid.select_tag(str);
+                std::vector<std::string> block_values{};
+                std::uint8_t block_data[block_size];
+                std::size_t block_index = 0;
+
+                for (const auto& block : blocks) {
+                    std::string block_value = "Block " + std::to_string(block) + ": ";
+                    std::uint8_t process = rfid.auth(0x60, block, key_a, str);
+                    if (process == MI_OK) {
+                        std::fill(std::begin(block_data), std::end(block_data), 0x00);
+
+                        const std::size_t start_idx = block_index * block_size;
+                        const std::size_t current_chunk_size = std::min(static_cast<std::size_t>(block_size), data.length() - start_idx);
+
+                        if (start_idx < data.length()) {
+                            std::copy_n(data.begin() + static_cast<std::uint8_t>(start_idx), current_chunk_size, block_data);
+                        }
+
+                        // try {
+                        //     debug("Writing data \"" + data.substr(start_idx, current_chunk_size) + "\"");
+                        // } catch (...) {}
+                        process = rfid.write_data(block, block_data);
+                        if (process == MI_OK) {
+                            block_value += "Success Writing Data Packet";
+                        } else {
+                            block_value += "Error Writing Data Packet";
+                        }
+                    } else {
+                        block_value += "Could Not Authenticate To Block";
+                    }
+                    block_values.push_back(block_value);
+                    block_index++;
+                }
+
+            } else {
+                end_card_read();
+                return FAILURE;
+            }
+
+            // Reset For Next Poll
+            end_card_read();
+            return SUCCESS;
         }
 
         auto fired() -> void {
