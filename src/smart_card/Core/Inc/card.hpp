@@ -29,15 +29,6 @@ namespace card {
         TIM_HandleTypeDef* timer{};
         bool initialized{};
 
-        auto end_card_read() const -> void {
-            // Reset For Next Poll
-            // debug("Reset For Next Poll");
-            rfid.halt();
-
-            // Add Newline To Debug Output
-            // debug("\n\r");
-        }
-
     public:
         SmartCard() = default;
         SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* tim, const GPIOPin select_pin, const GPIOPin reset_pin)
@@ -75,18 +66,21 @@ namespace card {
             // Find Cards Present
             auto status = rfid.request(PICC_REQIDL, str);
             if (status != MI_OK) {
-                end_card_read();
+                // debug("No Card Found");
+                rfid.halt();
                 return std::nullopt;
             }
+            // debug("Card Found");
 
             // Get Card UID
             status = rfid.anticoll(str);
             if (status == MI_OK) {
+                // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
                 const auto capacity = rfid.select_tag(str);
                 std::vector<std::string> block_values{};
 
                 for (const auto& block : blocks) {
-                    std::string block_value = "Block " + std::to_string(block) + ": ";
+                    std::string block_value = std::to_string(block) + ": ";
                     std::uint8_t process = rfid.auth(0x60, block, key_a, str);
                     if (process == MI_OK) {
                         std::uint8_t block_data[16];
@@ -100,6 +94,7 @@ namespace card {
                             }
                             block_value += line;
                             data += line;
+                            // debug("\tCard Block " + std::to_string(block) + ": \"" + line + "\"");
                         } else {
                             block_value += "Error Reading Data Packet";
                         }
@@ -110,12 +105,14 @@ namespace card {
                 }
 
             } else {
-                end_card_read();
+                debug("Could Not Parse Card UID");
+                rfid.halt();
                 return std::nullopt;
             }
+            // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
 
             // Reset For Next Poll
-            end_card_read();
+            rfid.halt();
             return data;
         }
 
@@ -133,7 +130,7 @@ namespace card {
             // Find Cards Present
             auto status = rfid.request(PICC_REQIDL, str);
             if (status != MI_OK) {
-                end_card_read();
+                rfid.halt();
                 return std::nullopt;
             }
 
@@ -175,12 +172,12 @@ namespace card {
                 }
 
             } else {
-                end_card_read();
+                rfid.halt();
                 return FAILURE;
             }
 
             // Reset For Next Poll
-            end_card_read();
+            rfid.halt();
             return SUCCESS;
         }
 
