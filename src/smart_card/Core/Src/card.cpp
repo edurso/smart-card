@@ -62,7 +62,7 @@ namespace card {
 		//
 		// }
 		
-		if (const auto data = smart_card.card_read()) {
+		if (const auto data = smart_card.read_card()) {
 			debug("Card Found: \"" + *data + "\"");
 		} else {
 			debug("No Card Found");

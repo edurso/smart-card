@@ -11,9 +11,9 @@ namespace card {
      * Object Representing the LSM303DLHC
      */
     class IMU {
-        static constexpr std::uint8_t ADDR = 0x19;
-        static constexpr std::uint8_t ADDR_W = ADDR << 1;
-        static constexpr std::uint8_t ADDR_R = ADDR_W | 0x01;
+        static constexpr std::uint8_t ADDR =            0x19;
+        static constexpr std::uint8_t ADDR_W =          ADDR << 1;
+        static constexpr std::uint8_t ADDR_R =          ADDR_W | 0x01;
 
         static constexpr std::uint8_t CTRL_REG1_A =     0x20;
         static constexpr std::uint8_t CTRL_REG2_A =     0x21;
@@ -64,10 +64,20 @@ namespace card {
         I2C_HandleTypeDef *hi2c{};
         std::size_t fired_count{};
 
+        /**
+         * Write an I2C transaction to the IMU
+         * @param buf buffer to be written
+         * @param size sie of buffer
+         */
         auto write(std::uint8_t *buf, const std::uint16_t size) const -> void {
             check(HAL_I2C_Master_Transmit(hi2c, ADDR_W, buf, size, HAL_MAX_DELAY));
         }
 
+        /**
+         * Write a value to a register on the IMU
+         * @param reg register address to be written
+         * @param val value to be written to the register
+         */
         auto write_register(const std::uint8_t reg, const std::uint8_t val) const -> void {
             std::uint8_t buf[12];
             buf[0] = reg;
@@ -75,6 +85,11 @@ namespace card {
             write(buf, 2);
         }
 
+        /**
+         * Read an I2C transaction from the IMU
+         * @param buf buffer to write then read from the IMU
+         * @param size size of buffer
+         */
         auto read(std::uint8_t *buf, const std::uint16_t size) const -> void {
             check(HAL_I2C_Master_Transmit(hi2c, ADDR_W, buf, 1, HAL_MAX_DELAY));
             check(HAL_I2C_Master_Receive(hi2c, ADDR_R, buf, size, HAL_MAX_DELAY));
@@ -86,6 +101,9 @@ namespace card {
         : hi2c{hi2c} {
         }
 
+        /**
+         * Initialize the IMU for interrupt on sudden motion
+         */
         auto init() const -> void {
             write_register(CTRL_REG1_A, 0x97);
             write_register(CTRL_REG2_A, 0x00);
@@ -96,6 +114,9 @@ namespace card {
             write_register(INT1_DURATION_A, 0x05);
         }
 
+        /**
+         * Read the value of INT1_SRC_A from the IMU and display it to serial
+         */
         auto read() const -> void {
             std::uint8_t buf[12];
             buf[0] = INT1_SOURCE_A;
@@ -103,10 +124,17 @@ namespace card {
             debugf("INT1_SRC_A : 0x%x\n\r", buf[0]);
         }
 
+        /**
+         * Indicate to the IMU that its interrupt has fired
+         */
         auto fired() -> void {
             debug("Fired " + std::to_string(fired_count++));
         }
 
+        /**
+         * Get the number of times the IMU instance has fired
+         * @return The number of IMU interrupt fires
+         */
         [[nodiscard]] auto get_fired() const -> std::size_t {
             return fired_count;
         }

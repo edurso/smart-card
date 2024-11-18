@@ -1,9 +1,6 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
 #include <optional>
-#include <vector>
 
 #include "gpio.hpp"
 #include "debug.hpp"
@@ -13,15 +10,6 @@
 
 
 namespace card {
-    constexpr std::uint8_t key_a[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-    constexpr std::array<std::uint8_t, 47> blocks = {1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20, 21, 22,
-                                                    24, 25, 26, 28, 29, 30, 32, 33, 34, 36, 37, 38, 40, 41, 42,
-                                                    44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 58, 60, 61, 62};
-
-    enum CardTransaction {
-        SUCCESS,
-        FAILURE,
-    };
 
     class SmartCard {
         RFID rfid{};
@@ -35,6 +23,9 @@ namespace card {
         : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, timer{tim}, initialized{false} {
         }
 
+        /**
+         * Initialize the SmartCard
+         */
         auto init() -> void {
             debug("\n");
             debug("Initializing...");
@@ -54,133 +45,26 @@ namespace card {
             initialized = true;
         }
 
-        [[nodiscard]] auto card_read() const -> std::optional<std::string> {
-            if (!initialized) return std::nullopt;
-
-            std::string data;
-            std::uint8_t str[MAX_LEN];
-
-            // Re-Initialize RFID Module
-            rfid.init();
-
-            // Find Cards Present
-            auto status = rfid.request(PICC_REQIDL, str);
-            if (status != MI_OK) {
-                // debug("No Card Found");
-                rfid.halt();
-                return std::nullopt;
-            }
-            // debug("Card Found");
-
-            // Get Card UID
-            status = rfid.anticoll(str);
-            if (status == MI_OK) {
-                // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
-                const auto capacity = rfid.select_tag(str);
-                std::vector<std::string> block_values{};
-
-                for (const auto& block : blocks) {
-                    std::string block_value = std::to_string(block) + ": ";
-                    std::uint8_t process = rfid.auth(0x60, block, key_a, str);
-                    if (process == MI_OK) {
-                        std::uint8_t block_data[16];
-                        process = rfid.read_data(block, block_data);
-                        if (process == MI_OK) {
-                            std::string line;
-                            for (const unsigned char i : block_data) {
-                                if (i != 0x00) {
-                                    line += i;
-                                }
-                            }
-                            block_value += line;
-                            data += line;
-                            // debug("\tCard Block " + std::to_string(block) + ": \"" + line + "\"");
-                        } else {
-                            block_value += "Error Reading Data Packet";
-                        }
-                    } else {
-                        block_value += "Could Not Authenticate To Block";
-                    }
-                    block_values.push_back(block_value);
-                }
-
-            } else {
-                debug("Could Not Parse Card UID");
-                rfid.halt();
-                return std::nullopt;
-            }
-            // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
-
-            // Reset For Next Poll
-            rfid.halt();
-            return data;
+        /**
+         * Read data from the memory on the MIFARE RFID Card
+         * @return The data in the 47 readable blocks of the card as a string.
+         */
+        [[nodiscard]] auto read_card() -> std::optional<std::string> {
+            return rfid.read_card();
         }
 
-        [[nodiscard]] auto card_write(const std::string& data) const -> std::optional<CardTransaction> {
-            if (!initialized) return std::nullopt;
-
-            constexpr std::uint8_t block_size = 16;
-            if (data.length() > (blocks.size() * block_size)) return std::nullopt;
-
-            std::uint8_t str[MAX_LEN];
-
-            // Re-Initialize RFID Module
-            rfid.init();
-
-            // Find Cards Present
-            auto status = rfid.request(PICC_REQIDL, str);
-            if (status != MI_OK) {
-                rfid.halt();
-                return std::nullopt;
-            }
-
-            // Get Card UID
-            status = rfid.anticoll(str);
-            if (status == MI_OK) {
-                const auto capacity = rfid.select_tag(str);
-                std::vector<std::string> block_values{};
-                std::uint8_t block_data[block_size];
-                std::size_t block_index = 0;
-
-                for (const auto& block : blocks) {
-                    std::string block_value = "Block " + std::to_string(block) + ": ";
-                    std::uint8_t process = rfid.auth(0x60, block, key_a, str);
-                    if (process == MI_OK) {
-                        std::fill(std::begin(block_data), std::end(block_data), 0x00);
-
-                        const std::size_t start_idx = block_index * block_size;
-                        const std::size_t current_chunk_size = std::min(static_cast<std::size_t>(block_size), data.length() - start_idx);
-
-                        if (start_idx < data.length()) {
-                            std::copy_n(data.begin() + static_cast<std::uint8_t>(start_idx), current_chunk_size, block_data);
-                        }
-
-                        // try {
-                        //     debug("Writing data \"" + data.substr(start_idx, current_chunk_size) + "\"");
-                        // } catch (...) {}
-                        process = rfid.write_data(block, block_data);
-                        if (process == MI_OK) {
-                            block_value += "Success Writing Data Packet";
-                        } else {
-                            block_value += "Error Writing Data Packet";
-                        }
-                    } else {
-                        block_value += "Could Not Authenticate To Block";
-                    }
-                    block_values.push_back(block_value);
-                    block_index++;
-                }
-
-            } else {
-                rfid.halt();
-                return FAILURE;
-            }
-
-            // Reset For Next Poll
-            rfid.halt();
-            return SUCCESS;
+        /**
+         * Write data to the memory on the MIFARE RFID Card
+         * @param data Data to be written to the card (not to exceed 47 blocks x 16 bytes/block)
+         * @return An optional card transaction. std::nullopt indicates write was not attempted.
+         */
+        [[nodiscard]] auto write_card(const std::string& data) -> std::optional<CardTransaction> {
+            return rfid.write_card(data);
         }
 
+        /**
+         * Indicates an external interrupt has been fired.
+         */
         auto fired() -> void {
             imu.fired();
         }
