@@ -630,7 +630,9 @@ namespace card {
             status = anticoll(str);
             if (status == MI_OK) {
                 // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
-                const auto capacity = select_tag(str);
+                // const auto capacity = select_tag(str);
+                // ReSharper disable once CppExpressionWithoutSideEffects
+                select_tag(str);
                 std::vector<std::string> block_values{};
 
                 for (const auto& block : blocks) {
@@ -695,7 +697,9 @@ namespace card {
             // Get Card UID
             status = anticoll(str);
             if (status == MI_OK) {
-                const auto capacity = select_tag(str);
+                // const auto capacity = select_tag(str);
+                // ReSharper disable once CppExpressionWithoutSideEffects
+                select_tag(str);
                 std::vector<std::string> block_values{};
                 std::uint8_t block_data[block_size];
                 std::size_t block_index = 0;
