@@ -2,17 +2,22 @@
 
 ## Component List
 
-| Component               | Device Name | Protocol |
-|-------------------------|-------------|----------|
-| STM32                   | STM32L432KC | -        |
-| NFC Tags                | RC522       | SPI      |
-| LCD Touchscreen Display | ILI9341     | SPI      |
-| IMU                     | GY511       | I2C      |
-| Speaker                 | -           | DAC      |
-| LEDs                    | -           | GPIO     |
-| Debug                   | -           | UART     |
+| Component               | Device Name | Protocol | Status |
+|-------------------------|-------------|----------|--------|
+| STM32                   | STM32L432KC | -        | ✅      |
+| NFC Tags                | RC522       | SPI      | ✅      |
+| LCD Touchscreen Display | ILI9341     | SPI      |        |
+| IMU                     | GY511       | I2C      | ✅      |
+| Speaker                 | -           | DAC      |        |
+| LEDs                    | -           | GPIO     |        |
+| Debug                   | -           | UART     | ✅      |
 
 ## Presentation
 
-RFID/NFC - Low Power Communication
+| Task                    | Status |
+|-------------------------|--------|
+| Make Presentation Draft | ✅      |
+| Give to Sample          | ✅      |
+| Revise                  |        |
+| Give to Class           |        |
 
