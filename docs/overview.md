@@ -18,6 +18,6 @@
 |-------------------------|--------|
 | Make Presentation Draft | ✅      |
 | Give to Sample          | ✅      |
-| Revise                  |        |
-| Give to Class           |        |
+| Revise                  | ✅      |
+| Give to Class           | ✅      |
 
