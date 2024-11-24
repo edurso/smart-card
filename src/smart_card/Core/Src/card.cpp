@@ -30,7 +30,9 @@ namespace card {
 			SPEAKER_TIMER,
 			TIM_CHANNEL_1,
 			GPIOPin(GPIOA, GPIO_PIN_0),
-			GPIOPin(GPIOA, GPIO_PIN_5)
+			GPIOPin(GPIOA, GPIO_PIN_5),
+			GPIOPin(GPIOA, GPIO_PIN_11),
+			GPIOPin(GPIOA, GPIO_PIN_12)
 		);
 		smart_card.init();
 		initialized = true;

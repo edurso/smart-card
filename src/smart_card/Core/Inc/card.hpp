@@ -18,6 +18,8 @@ namespace card {
         IMU imu{};
         Speaker speaker{};
         TIM_HandleTypeDef* timer{};
+        GPIOPin red_led{};
+        GPIOPin green_led{};
         bool initialized{};
 
         // For Testing Speaker
@@ -27,8 +29,8 @@ namespace card {
 
     public:
         SmartCard() = default;
-        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim, TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin, const GPIOPin reset_pin)
-        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim}, initialized{false} {
+        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim, TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin, const GPIOPin reset_pin, const GPIOPin led_error_pin, const GPIOPin led_success_pin)
+        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim}, red_led{led_error_pin}, green_led{led_success_pin}, initialized{false} {
         }
 
         /**
@@ -71,14 +73,20 @@ namespace card {
          */
         auto fired() -> void {
             imu.fired();
+            green_led.write(GPIO_PIN_RESET);
+            green_led.write(GPIO_PIN_RESET);
 
             if (const auto payload = rfid.read_card()) {
                 if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
                     debug("Card Found: \"" + data + "\"");
                     speaker.start(PLAY_SUCCESS);
+                    green_led.write(GPIO_PIN_SET);
+                    red_led.write(GPIO_PIN_RESET);
                 } else {
                     debug("Card Found Defective");
                     speaker.start(PLAY_ERROR);
+                    green_led.write(GPIO_PIN_RESET);
+                    red_led.write(GPIO_PIN_SET);
                 }
             } else {
                 debug("No Card Found");
