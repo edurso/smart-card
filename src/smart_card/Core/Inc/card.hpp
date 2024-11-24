@@ -2,11 +2,13 @@
 
 #include <optional>
 
-#include "gpio.hpp"
+#include "card.hpp"
 #include "debug.hpp"
+#include "gpio.hpp"
 #include "hw.hpp"
-#include "rfid.hpp"
 #include "imu.hpp"
+#include "rfid.hpp"
+#include "speaker.hpp"
 
 
 namespace card {
@@ -14,13 +16,19 @@ namespace card {
     class SmartCard {
         RFID rfid{};
         IMU imu{};
+        Speaker speaker{};
         TIM_HandleTypeDef* timer{};
         bool initialized{};
 
+        // For Testing Speaker
+        std::size_t cnt{};
+        std::uint32_t freq = 0;
+        bool going_up = true;
+
     public:
         SmartCard() = default;
-        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* tim, const GPIOPin select_pin, const GPIOPin reset_pin)
-        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, timer{tim}, initialized{false} {
+        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim, TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin, const GPIOPin reset_pin)
+        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim}, initialized{false} {
         }
 
         /**
@@ -41,16 +49,12 @@ namespace card {
             debug("Initializing IMU...");
             imu.init();
 
+            // Initialize Speaker
+            debug("Initializing Speaker...");
+            speaker.init();
+
             debug("Initialized\n\r");
             initialized = true;
-        }
-
-        /**
-         * Read data from the memory on the MIFARE RFID Card
-         * @return The data in the 47 readable blocks of the card as a string.
-         */
-        [[nodiscard]] auto read_card() -> std::optional<std::string> {
-            return rfid.read_card();
         }
 
         /**
@@ -67,6 +71,23 @@ namespace card {
          */
         auto fired() -> void {
             imu.fired();
+
+            if (const auto payload = rfid.read_card()) {
+                if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
+                    debug("Card Found: \"" + data + "\"");
+                    speaker.start(PLAY_SUCCESS);
+                } else {
+                    debug("Card Found Defective");
+                    speaker.start(PLAY_ERROR);
+                }
+            } else {
+                debug("No Card Found");
+                speaker.start(SILENT);
+            }
+        }
+
+        auto update_speaker() -> void {
+            speaker.update();
         }
 
     };

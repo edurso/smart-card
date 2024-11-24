@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -59,7 +61,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define RFID_SS_Pin GPIO_PIN_0
 #define RFID_SS_GPIO_Port GPIOA
-#define RFID_RST_Pin GPIO_PIN_4
+#define RFID_RST_Pin GPIO_PIN_5
 #define RFID_RST_GPIO_Port GPIOA
 #define STM_LED_Pin GPIO_PIN_3
 #define STM_LED_GPIO_Port GPIOB

@@ -608,8 +608,10 @@ namespace card {
          * Read data from the memory on the MIFARE RFID Card
          * @return The data in the 47 readable blocks of the card as a string.
          */
-        [[nodiscard]] auto read_card() -> std::optional<std::string> {
+        [[nodiscard]] auto read_card() -> std::optional<std::tuple<CardTransaction, std::string>> {
             if (!initialized) return std::nullopt;
+
+            CardTransaction transaction = SUCCESS;
 
             std::string data;
             std::uint8_t str[MAX_LEN];
@@ -652,9 +654,11 @@ namespace card {
                             // debug("\tCard Block " + std::to_string(block) + ": \"" + line + "\"");
                         } else {
                             block_value += "Error Reading Data Packet";
+                            transaction = FAILURE;
                         }
                     } else {
                         block_value += "Could Not Authenticate To Block";
+                        transaction = FAILURE;
                     }
                     block_values.push_back(block_value);
                 }
@@ -662,13 +666,13 @@ namespace card {
             } else {
                 debug("Could Not Parse Card UID");
                 halt();
-                return std::nullopt;
+                transaction = FAILURE;
             }
             // debugf("\tCard UID: %x:%x:%x:%x\n\r", str[0], str[1], str[2], str[3]);
 
             // Reset For Next Poll
             halt();
-            return data;
+            return std::make_tuple(transaction, data);;
         }
 
         /**
