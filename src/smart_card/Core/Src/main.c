@@ -62,12 +62,13 @@ static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-
+// void Init();
+void mainApp(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void Init();
+
 /* USER CODE END 0 */
 
 /**
@@ -104,7 +105,8 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  Init();
+  // Init();
+  mainApp();
   /* USER CODE END 2 */
 
   /* Infinite loop */
