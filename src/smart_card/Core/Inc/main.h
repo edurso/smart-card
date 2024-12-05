@@ -61,10 +61,20 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define RFID_SS_Pin GPIO_PIN_0
 #define RFID_SS_GPIO_Port GPIOA
+#define LCD_BL_Pin GPIO_PIN_4
+#define LCD_BL_GPIO_Port GPIOA
 #define RFID_RST_Pin GPIO_PIN_5
 #define RFID_RST_GPIO_Port GPIOA
+#define LCD_RST_Pin GPIO_PIN_0
+#define LCD_RST_GPIO_Port GPIOB
 #define STM_LED_Pin GPIO_PIN_3
 #define STM_LED_GPIO_Port GPIOB
+#define TS_CS_Pin GPIO_PIN_4
+#define TS_CS_GPIO_Port GPIOB
+#define LCD_RS_Pin GPIO_PIN_5
+#define LCD_RS_GPIO_Port GPIOB
+#define LCD_CS_Pin GPIO_PIN_7
+#define LCD_CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
