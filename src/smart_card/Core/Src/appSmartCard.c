@@ -3,10 +3,10 @@
 #include "main.h"
 
 /* BSP LCD driver */
-#include "../Lcd/stm32_adafruit_lcd.h"
+#include "stm32_adafruit_lcd.h"
 
 /* BSP TS driver */
-#include "../Lcd/stm32_adafruit_ts.h"
+#include "stm32_adafruit_ts.h"
 
 //=============================================================================
 /* Setting section (please set the necessary things in this section) */

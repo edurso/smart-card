@@ -56,8 +56,8 @@
 #endif 
 
 /* Includes ------------------------------------------------------------------*/
-#include "../Lcd/lcd.h"
-#include "../Lcd/Fonts/fonts.h"
+#include "lcd.h"
+#include "fonts.h"
 
 //-----------------------------------------------------------------------------
 /* Config section (you can change this defines) */

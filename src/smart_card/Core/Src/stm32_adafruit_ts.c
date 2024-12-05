@@ -1,8 +1,8 @@
-#include "../Lcd/stm32_adafruit_ts.h"
+#include "stm32_adafruit_ts.h"
 
 #include "main.h"
 
-#include "../Lcd/ts.h"
+#include "ts.h"
 
 extern TS_DrvTypeDef          *ts_drv;
 

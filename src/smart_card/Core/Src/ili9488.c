@@ -1,9 +1,9 @@
-#include "../Lcd/ili9488.h"
+#include "ili9488.h"
 
 #include "main.h"
 
-#include "../Lcd/lcd.h"
-#include "../Lcd/lcd_io.h"
+#include "lcd.h"
+#include "lcd_io.h"
 
 void     ili9488_Init(void);
 uint32_t ili9488_ReadID(void);

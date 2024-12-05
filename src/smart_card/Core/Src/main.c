@@ -21,7 +21,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+/* BSP LCD driver */
+#include "stm32_adafruit_lcd.h"
+/* BSP TS driver */
+#include "stm32_adafruit_ts.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +67,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
 // void Init();
-void mainApp(void);
+// void mainApp(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -106,7 +110,30 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   // Init();
-  mainApp();
+  // mainApp();
+
+    TS_StateTypeDef ts;
+    uint16_t boxsize;
+    uint16_t oldcolor, currentcolor;
+
+    BSP_LCD_Init();
+    BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+    BSP_LCD_Clear(LCD_COLOR_BLACK);
+
+
+    ts_calib();
+
+    boxsize = BSP_LCD_GetYSize() / 3;
+
+    BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+    BSP_LCD_DrawRect(BSP_LCD_GetXSize()-boxsize, 0, boxsize, boxsize);
+    BSP_LCD_DisplayStringAt(BSP_LCD_GetYSize()-boxsize*1.25, boxsize/2 - BSP_LCD_GetFont()->Height/2, (uint8_t *) "SHOW ME", CENTER_MODE);
+    BSP_LCD_DrawRect(BSP_LCD_GetXSize()-boxsize, boxsize, boxsize, boxsize);
+    BSP_LCD_DisplayStringAt(BSP_LCD_GetYSize()-boxsize*1.25, boxsize+boxsize/2 - BSP_LCD_GetFont()->Height/2, (uint8_t *) "NEXT", CENTER_MODE);
+    BSP_LCD_DrawRect(BSP_LCD_GetXSize()-boxsize, boxsize*2, boxsize, boxsize);
+    BSP_LCD_DisplayStringAt(BSP_LCD_GetYSize()-boxsize*1.25, boxsize*2+boxsize/2 - BSP_LCD_GetFont()->Height/2, (uint8_t *) "PREVIOUS", CENTER_MODE);
+
+    currentcolor = LCD_COLOR_RED;
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -5,15 +5,15 @@
 */
 
 //-----------------------------------------------------------------------------
-#include "../Lcd/lcdts_io_xpt2046_spi_hal.h"
+#include "lcdts_io_xpt2046_spi_hal.h"
 
 #include <stdio.h>
 
 #include "main.h"
 
-#include "../Lcd/lcd.h"
-#include "../Lcd/lcd_io.h"
-#include "../Lcd/ts.h"
+#include "lcd.h"
+#include "lcd_io.h"
+#include "ts.h"
 
 //-----------------------------------------------------------------------------
 #define  DMA_MINSIZE          0x0010

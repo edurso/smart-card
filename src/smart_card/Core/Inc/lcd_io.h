@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#include "../Lcd/lcd.h"
+#include "lcd.h"
 
 //=============================================================================
 /* Interface section */

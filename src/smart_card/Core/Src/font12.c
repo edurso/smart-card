@@ -36,7 +36,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../../Lcd/Fonts/fonts.h"
+#include "fonts.h"
 
 /** @addtogroup Utilities
   * @{

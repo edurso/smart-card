@@ -8,6 +8,8 @@
 #ifndef __BMP_H_
 #define __BMP_H_
 
+#include <stdint.h>
+
 typedef struct __attribute__((packed)) tagBITMAPFILEHEADER {
   uint16_t   bfType;
   uint32_t   bfSize;
