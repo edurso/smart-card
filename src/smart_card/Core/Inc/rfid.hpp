@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <tuple>
 
 #include "debug.hpp"
 
