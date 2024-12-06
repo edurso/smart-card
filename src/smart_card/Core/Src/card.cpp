@@ -7,12 +7,14 @@ extern TIM_HandleTypeDef htim1; // Variable Hz
 extern TIM_HandleTypeDef htim7; // 100 Hz
 
 extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi3;
 extern I2C_HandleTypeDef hi2c1;
 
 // Rename handles
 #define SPEAKER_TIMER &htim1
 #define INT_TIMER &htim7
-#define SPI_H &hspi1
+#define LCD_SPI_H &hspi1
+#define SPI_H &hspi3
 #define I2C_H &hi2c1
 
 
@@ -30,19 +32,19 @@ namespace card {
 
 	auto init_callback() -> void {
 
-	    debug("Start Logic Analyzer");
-	    HAL_Delay(5000);
+	    // debug("Start Logic Analyzer");
+	    // HAL_Delay(5000);
 	    const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
-        const auto ts_cs_pin = GPIOPin(GPIOB, GPIO_PIN_4);
+        const auto ts_cs_pin = GPIOPin(GPIOA, GPIO_PIN_4);
 	    const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
 
-	    lcd_cs_pin.write(GPIO_PIN_SET);
-	    ts_cs_pin.write(GPIO_PIN_SET);
-	    rfid_cs_pin.write(GPIO_PIN_SET);
-
-	    debug("RESET PINS");
-	    HAL_Delay(5000);
-	    debug("Beginning Init");
+	    // lcd_cs_pin.write(GPIO_PIN_SET);
+	    // ts_cs_pin.write(GPIO_PIN_SET);
+	    // rfid_cs_pin.write(GPIO_PIN_SET);
+	    //
+	    // debug("RESET PINS");
+	    // HAL_Delay(5000);
+	    // debug("Beginning Init");
 		smart_card = SmartCard(
 		    data,
 			SPI_H,
@@ -53,14 +55,14 @@ namespace card {
 			rfid_cs_pin,
 			GPIOPin(GPIOA, GPIO_PIN_5),
 			GPIOPin(GPIOA, GPIO_PIN_11),
-			GPIOPin(GPIOA, GPIO_PIN_12),
+			// GPIOPin(GPIOA, GPIO_PIN_12),
 			lcd_cs_pin,
 			ts_cs_pin
 		);
 		smart_card.init();
 		initialized = true;
 	    current_contact = Contact().get_contact_t();
-	    debug("END INIT CALLBACK");
+	    // debug("END INIT CALLBACK");
 	}
 
     auto get_data(const req_t req) -> contact_t {
@@ -111,25 +113,35 @@ namespace card {
     }
 
     auto main_loop() -> void {
-	    // if (!initialized) {
-	    //     debug("Not Initialized, Exiting");
-	    //     Error_Handler();
-	    // }
-	    HAL_Delay(5000);
-	    debug("START MAIN LOOP");
+	    if (!initialized) {
+	        debug("Not Initialized, Exiting");
+	        Error_Handler();
+	    }
+
+        size_t cnt;
+
+	    debugf("flag %u\n\r", cnt++);
+
 	    TS_StateTypeDef ts;
         uint16_t x_boxsize, y_boxsize;
         uint16_t oldcolor;
+	    debugf("flag %u\n\r", cnt++);
 
         BSP_LCD_Init();
+	    debugf("flag %u\n\r", cnt++);
         BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	    debugf("flag %u\n\r", cnt++);
         BSP_LCD_Clear(LCD_COLOR_BLACK);
+	    debugf("flag %u\n\r", cnt++);
 
         // ts_calib();
 
         x_boxsize = BSP_LCD_GetYSize() / 3;
+	    debugf("flag %u\n\r", cnt++);
         y_boxsize = BSP_LCD_GetYSize() / 3;
+	    debugf("flag %u\n\r", cnt++);
         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+	    debugf("flag %u\n\r", cnt++);
 
         uint16_t currentcolor = LCD_COLOR_RED;
 
@@ -137,6 +149,8 @@ namespace card {
         enum page current_page;
         current_page = main_page;
         int touched = 0;
+	    debugf("flag %u\n\r", cnt++);
+	    debug("finished");
 
         while (true) {
             BSP_TS_GetState(&ts);

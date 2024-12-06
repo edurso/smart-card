@@ -19,7 +19,7 @@ namespace card {
      */
     inline auto check_spi(const HAL_StatusTypeDef status) -> void {
         if (status != HAL_SPI_ERROR_NONE) {
-            debug("SPI Error Encountered");
+            debug("SPI Error Encountered, Termination");
             Error_Handler();
         }
     }
@@ -339,11 +339,11 @@ namespace card {
                     }
                 } else {
                     status = MI_ERR;
-                    debug("Request resulted in error");
+                    debug("Request resulted in error: Error Register High");
                 }
             } else {
                 status = MI_ERR;
-                debug("Request timed out");
+                debug("Failed to communicate with MFRC522");
             }
 
             return status;

@@ -27,7 +27,7 @@ namespace card {
         Speaker speaker{};
         TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
-        GPIOPin green_led{};
+        // GPIOPin green_led{};
         GPIOPin lcd_cs_pin{};
         GPIOPin ts_cs_pin{};
         std::size_t fired_counter{};
@@ -51,7 +51,7 @@ namespace card {
             const GPIOPin select_pin,
             const GPIOPin reset_pin,
             const GPIOPin led_error_pin,
-            const GPIOPin led_success_pin,
+            // const GPIOPin led_success_pin,
             const GPIOPin lcd_cs_pin,
             const GPIOPin ts_cs_pin
             ) :
@@ -60,13 +60,14 @@ namespace card {
         speaker{sp_tim, tim_ch},
         timer{int_tim},
         red_led{led_error_pin},
-        green_led{led_success_pin},
+        // green_led{led_success_pin},
         lcd_cs_pin{lcd_cs_pin},
         ts_cs_pin{ts_cs_pin},
         initialized{false}
         {
             this->me = Contact(me);
-            debug("SmartCard initialized for " + this->me.get_name());
+            debug("\n\r------------------------------------------\n\rSmartCard initialized for " + this->me.get_name());
+            HAL_Delay(5000);
         }
 
         /**
@@ -117,13 +118,13 @@ namespace card {
             // Limits Over-Frequent Reading
             if (!read_valid) {
 
-                green_led.write(GPIO_PIN_RESET);
+                // green_led.write(GPIO_PIN_RESET);
                 red_led.write(GPIO_PIN_RESET);
 
                 if (const auto payload = rfid.read_card()) {
                     if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
                         speaker.start(PLAY_SUCCESS);
-                        green_led.write(GPIO_PIN_SET);
+                        // green_led.write(GPIO_PIN_SET);
                         red_led.write(GPIO_PIN_RESET);
                         if (const auto contact = Contact(data); contact.is_valid()) {
                             auto exists = false;
@@ -142,13 +143,13 @@ namespace card {
                     } else {
                         debug("Contact Found, Could Not Read");
                         speaker.start(PLAY_ERROR);
-                        green_led.write(GPIO_PIN_RESET);
+                        // green_led.write(GPIO_PIN_RESET);
                         red_led.write(GPIO_PIN_SET);
                     }
                     read_valid = true;
                 } else {
                     debug("No Card Found");
-                    green_led.write(GPIO_PIN_RESET);
+                    // green_led.write(GPIO_PIN_RESET);
                     red_led.write(GPIO_PIN_RESET);
                     speaker.start(SILENT);
                 }
