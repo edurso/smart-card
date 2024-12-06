@@ -38,7 +38,9 @@ namespace card {
 			GPIOPin(GPIOA, GPIO_PIN_0),
 			GPIOPin(GPIOA, GPIO_PIN_5),
 			GPIOPin(GPIOA, GPIO_PIN_11),
-			GPIOPin(GPIOA, GPIO_PIN_12)
+			GPIOPin(GPIOA, GPIO_PIN_12),
+			GPIOPin(GPIOB, GPIO_PIN_7),
+			GPIOPin(GPIOB, GPIO_PIN_4)
 		);
 		smart_card.init();
 		initialized = true;

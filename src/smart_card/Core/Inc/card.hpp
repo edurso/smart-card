@@ -23,6 +23,8 @@ namespace card {
         TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
         GPIOPin green_led{};
+        GPIOPin lcd_cs_pin{};
+        GPIOPin ts_cs_pin{};
         std::size_t fired_counter{};
         bool read_valid{};
         bool initialized{};
@@ -44,7 +46,9 @@ namespace card {
             const GPIOPin select_pin,
             const GPIOPin reset_pin,
             const GPIOPin led_error_pin,
-            const GPIOPin led_success_pin
+            const GPIOPin led_success_pin,
+            const GPIOPin lcd_cs_pin,
+            const GPIOPin ts_cs_pin
             ) :
         rfid{hspi, select_pin, reset_pin},
         imu{hi2c},
@@ -52,6 +56,8 @@ namespace card {
         timer{int_tim},
         red_led{led_error_pin},
         green_led{led_success_pin},
+        lcd_cs_pin{lcd_cs_pin},
+        ts_cs_pin{ts_cs_pin},
         initialized{false},
         me{me}
         {
@@ -97,45 +103,54 @@ namespace card {
          */
         auto motion_detected() -> void {
             imu.fired();
+            const auto lcd_cs_state = lcd_cs_pin.read();
+            const auto ts_cs_state = ts_cs_pin.read();
+            lcd_cs_pin.write(GPIO_PIN_SET);
+            ts_cs_pin.write(GPIO_PIN_SET);
 
             // Limits Over-Frequent Reading
-            if (read_valid) return;
+            if (!read_valid) {
 
-            green_led.write(GPIO_PIN_RESET);
-            green_led.write(GPIO_PIN_RESET);
-
-            if (const auto payload = rfid.read_card()) {
-                if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
-                    speaker.start(PLAY_SUCCESS);
-                    green_led.write(GPIO_PIN_SET);
-                    red_led.write(GPIO_PIN_RESET);
-                    if (const auto contact = Contact(data); contact.is_valid()) {
-                        auto exists = false;
-                        for (const auto& c : contacts) {
-                            if (contact.same_as(c)) {
-                                exists = true;
-                                debug("Contact " + contact.get_name() + " Already Added");
-                            }
-                        }
-                        if (!exists) {
-                            contacts.push_back(contact);
-                            debug("Contact " + contact.get_name() + " Added");
-                        }
-                        debug("Card Storing " + std::to_string(contacts.size()) + " Contacts");
-                    }
-                } else {
-                    debug("Contact Found, Could Not Read");
-                    speaker.start(PLAY_ERROR);
-                    green_led.write(GPIO_PIN_RESET);
-                    red_led.write(GPIO_PIN_SET);
-                }
-                read_valid = true;
-            } else {
-                debug("No Card Found");
                 green_led.write(GPIO_PIN_RESET);
                 red_led.write(GPIO_PIN_RESET);
-                speaker.start(SILENT);
+
+                if (const auto payload = rfid.read_card()) {
+                    if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
+                        speaker.start(PLAY_SUCCESS);
+                        green_led.write(GPIO_PIN_SET);
+                        red_led.write(GPIO_PIN_RESET);
+                        if (const auto contact = Contact(data); contact.is_valid()) {
+                            auto exists = false;
+                            for (const auto& c : contacts) {
+                                if (contact.same_as(c)) {
+                                    exists = true;
+                                    debug("Contact " + contact.get_name() + " Already Added");
+                                }
+                            }
+                            if (!exists) {
+                                contacts.push_back(contact);
+                                debug("Contact " + contact.get_name() + " Added");
+                            }
+                            debug("Card Storing " + std::to_string(contacts.size()) + " Contacts");
+                        }
+                    } else {
+                        debug("Contact Found, Could Not Read");
+                        speaker.start(PLAY_ERROR);
+                        green_led.write(GPIO_PIN_RESET);
+                        red_led.write(GPIO_PIN_SET);
+                    }
+                    read_valid = true;
+                } else {
+                    debug("No Card Found");
+                    green_led.write(GPIO_PIN_RESET);
+                    red_led.write(GPIO_PIN_RESET);
+                    speaker.start(SILENT);
+                }
+
             }
+
+            lcd_cs_pin.write(lcd_cs_state);
+            ts_cs_pin.write(ts_cs_state);
         }
 
         auto update_speaker() -> void {

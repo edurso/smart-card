@@ -39,7 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 // TODO comment this out to test just card operations
-#define SCREEN
+// #define SCREEN
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
