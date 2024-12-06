@@ -54,19 +54,19 @@
      - mode: Alternate Function Push Pull
      - Pull-up/Pull-down: No pull-up and no pull-down
      - Max output speed: Very High
-     - User Label: LCDTS_SCK
+     - User Label: SPI_SCK
    - Lcd and Touchscreen MOSI
      - output level: n/a
      - mode: Alternate Function Push Pull
      - Pull-up/Pull-down: No pull-up and no pull-down
      - Max output speed: Very High
-     - User Label: LCDTS_MOSI
+     - User Label: SPI_MOSI
    - Lcd and Touchscreen MISO
      - output level: n/a
      - mode: Alternate Function Push Pull
      - Pull-up/Pull-down: No pull-up and no pull-down
      - Max output speed: Very High
-     - User Label: LCDTS_MISO
+     - User Label: SPI_MISO
    - Lcd reset pin (only when connected)
      - output level: High
      - mode: Output Push Pull
@@ -103,8 +103,8 @@ uint32_t LCD_IO_DmaBusy(void);
 
 /* If we want to know when the LCD DMA operation is finished, let's create a function in our program:
    This function is called by the driver at the end of DMA operations. */
-void LCD_IO_DmaTxCpltCallback(SPI_HandleTypeDef *hspi);
-void LCD_IO_DmaRxCpltCallback(SPI_HandleTypeDef *hspi);
+void LCD_IO_DmaTxCpltCallback(SPI_HandleTypeDef* hspi);
+void LCD_IO_DmaRxCpltCallback(SPI_HandleTypeDef* hspi);
 
 //=============================================================================
 /* Setting section (please set the necessary things in this section) */
@@ -171,7 +171,8 @@ void LCD_IO_DmaRxCpltCallback(SPI_HandleTypeDef *hspi);
      #define LCD_DMA_UNABLE(addr)  ((addr < 0x20000000) && (addr >= 0x10000000))
    Example stm32h743 (the DTCMRAM and ITCMRAM are not DMA capable):
      #define LCD_DMA_UNABLE(addr)  (((addr < 0x24000000) && (addr >= 0x20000000)) || (addr < 0x08000000))
-   Note: if we ensure that we do not draw a bitmap from a DMA-capable memory area, it is not necessary to set it (leave it that way) */
+   Note: if we ensure that we do not draw a bitmap from a DMA-capable memory area, it is not necessary to set it (leave
+   it that way) */
 #define LCD_DMA_UNABLE(addr) 0
 
 /* RGB565 to RGB888 and RGB888 to RGB565 convert byte order
