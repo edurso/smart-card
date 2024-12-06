@@ -157,9 +157,12 @@ namespace card {
                                                                 44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 58, 60, 61, 62};
 
         SPI_HandleTypeDef* hspi{};
+        DMA_HandleTypeDef* hspi_rx{};
+        DMA_HandleTypeDef* hspi_tx{};
         GPIOPin select_pin{};
         GPIOPin reset_pin{};
         bool initialized{};
+        bool use_dma{};
 
         /**
          * Pull Chip Select line low to indicate communication on bus is to RC522
@@ -570,8 +573,21 @@ namespace card {
 
     public:
         RFID() = default;
-        RFID(SPI_HandleTypeDef* hspi, const GPIOPin select_pin, const GPIOPin reset_pin)
-        : hspi(hspi), select_pin(select_pin), reset_pin{reset_pin} {
+        RFID(
+            SPI_HandleTypeDef* hspi,
+            DMA_HandleTypeDef* hspi_rx,
+            DMA_HandleTypeDef* hspi_tx,
+            const bool use_dma,
+            const GPIOPin select_pin,
+            const GPIOPin reset_pin
+            ) :
+        hspi(hspi),
+        hspi_rx(hspi_rx),
+        hspi_tx(hspi_tx),
+        select_pin(select_pin),
+        reset_pin{reset_pin},
+        use_dma(use_dma)
+        {
             deselect();
             reset_pin.write(GPIO_PIN_SET);
         }

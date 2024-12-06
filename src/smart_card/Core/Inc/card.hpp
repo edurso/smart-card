@@ -29,8 +29,28 @@ namespace card {
 
     public:
         SmartCard() = default;
-        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim, TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin, const GPIOPin reset_pin, const GPIOPin led_error_pin, const GPIOPin led_success_pin)
-        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim}, red_led{led_error_pin}, green_led{led_success_pin}, initialized{false} {
+        SmartCard(
+            SPI_HandleTypeDef* hspi,
+            DMA_HandleTypeDef* hspi_rx,
+            DMA_HandleTypeDef* hspi_tx,
+            const bool use_dma,
+            I2C_HandleTypeDef* hi2c,
+            TIM_HandleTypeDef* int_tim,
+            TIM_HandleTypeDef* sp_tim,
+            const std::uint32_t tim_ch,
+            const GPIOPin select_pin,
+            const GPIOPin reset_pin,
+            const GPIOPin led_error_pin,
+            const GPIOPin led_success_pin
+            ) :
+        rfid{hspi, hspi_rx, hspi_tx, use_dma, select_pin, reset_pin},
+        imu{hi2c},
+        speaker{sp_tim, tim_ch},
+        timer{int_tim},
+        red_led{led_error_pin},
+        green_led{led_success_pin},1
+        initialized{false}
+        {
         }
 
         /**

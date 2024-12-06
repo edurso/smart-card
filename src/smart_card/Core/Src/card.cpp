@@ -7,12 +7,16 @@ extern TIM_HandleTypeDef htim1; // Variable Hz
 extern TIM_HandleTypeDef htim7; // 100 Hz
 
 extern SPI_HandleTypeDef hspi1;
+extern DMA_HandleTypeDef hdma_spi1_rx;
+extern DMA_HandleTypeDef hdma_spi1_tx;
 extern I2C_HandleTypeDef hi2c1;
 
 // Rename handles
 #define SPEAKER_TIMER &htim1
 #define INT_TIMER &htim7
 #define SPI_H &hspi1
+#define SPI_DMA_RX_H &hdma_spi1_rx
+#define SPI_DMA_TX_H &hdma_spi1_tx
 #define I2C_H &hi2c1
 
 
@@ -25,6 +29,9 @@ namespace card {
 	auto init_callback() -> void {
 		smart_card = SmartCard(
 			SPI_H,
+			SPI_DMA_RX_H,
+            SPI_DMA_TX_H,
+            true,
 			I2C_H,
 			INT_TIMER,
 			SPEAKER_TIMER,

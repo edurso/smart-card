@@ -45,6 +45,8 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef hlpuart1;
 
 SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_rx;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim7;
@@ -56,6 +58,7 @@ TIM_HandleTypeDef htim7;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_I2C1_Init(void);
@@ -98,6 +101,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_LPUART1_UART_Init();
   MX_SPI1_Init();
   MX_I2C1_Init();
@@ -410,6 +414,25 @@ static void MX_TIM7_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -425,8 +448,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, RFID_SS_Pin|LCD_BL_Pin|RFID_RST_Pin|GPIO_PIN_11
-                          |GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, RFID_SS_Pin|LCD_BL_Pin|RFID_RST_Pin|LED_ERR_Pin
+                          |LED_SUC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LCD_RST_Pin|TS_CS_Pin|LCD_CS_Pin, GPIO_PIN_SET);
@@ -434,10 +457,10 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, STM_LED_Pin|LCD_RS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : RFID_SS_Pin LCD_BL_Pin RFID_RST_Pin PA11
-                           PA12 */
-  GPIO_InitStruct.Pin = RFID_SS_Pin|LCD_BL_Pin|RFID_RST_Pin|GPIO_PIN_11
-                          |GPIO_PIN_12;
+  /*Configure GPIO pins : RFID_SS_Pin LCD_BL_Pin RFID_RST_Pin LED_ERR_Pin
+                           LED_SUC_Pin */
+  GPIO_InitStruct.Pin = RFID_SS_Pin|LCD_BL_Pin|RFID_RST_Pin|LED_ERR_Pin
+                          |LED_SUC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -450,11 +473,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : IMU_INT_Pin */
+  GPIO_InitStruct.Pin = IMU_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : TS_CS_Pin LCD_RS_Pin LCD_CS_Pin */
   GPIO_InitStruct.Pin = TS_CS_Pin|LCD_RS_Pin|LCD_CS_Pin;
