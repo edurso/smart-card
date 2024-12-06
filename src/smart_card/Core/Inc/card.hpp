@@ -92,7 +92,6 @@ namespace card {
             debug("Initializing Speaker...");
             speaker.init();
 
-            debug("Initialized\n\r");
             initialized = true;
         }
 

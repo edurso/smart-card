@@ -20,50 +20,29 @@ extern I2C_HandleTypeDef hi2c1;
 
 namespace card {
 
+
+    enum page_t {
+        MY_PAGE,
+        MAIN_PAGE
+    };
+
 	SmartCard smart_card;
 	bool initialized{};
 	bool write{};
     contact_t current_contact{};
 
+    TS_StateTypeDef ts{};
+    uint16_t x_boxsize{}, y_boxsize{};
+    uint16_t oldcolor{};
+    uint16_t currentcolor{};
+    int touched{};
+
+    page_t current_page;
+
     // Format: "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
     // const auto data = "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~";
     const std::string data = "Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|Some Random EECS373 Student|~";
     // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
-
-	auto init_callback() -> void {
-
-	    // debug("Start Logic Analyzer");
-	    // HAL_Delay(5000);
-	    const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
-        const auto ts_cs_pin = GPIOPin(GPIOA, GPIO_PIN_4);
-	    const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
-
-	    // lcd_cs_pin.write(GPIO_PIN_SET);
-	    // ts_cs_pin.write(GPIO_PIN_SET);
-	    // rfid_cs_pin.write(GPIO_PIN_SET);
-	    //
-	    // debug("RESET PINS");
-	    // HAL_Delay(5000);
-	    // debug("Beginning Init");
-		smart_card = SmartCard(
-		    data,
-			SPI_H,
-			I2C_H,
-			INT_TIMER,
-			SPEAKER_TIMER,
-			TIM_CHANNEL_1,
-			rfid_cs_pin,
-			GPIOPin(GPIOA, GPIO_PIN_5),
-			GPIOPin(GPIOA, GPIO_PIN_11),
-			// GPIOPin(GPIOA, GPIO_PIN_12),
-			lcd_cs_pin,
-			ts_cs_pin
-		);
-		smart_card.init();
-		initialized = true;
-	    current_contact = Contact().get_contact_t();
-	    // debug("END INIT CALLBACK");
-	}
 
     auto get_data(const req_t req) -> contact_t {
 	    // return Contact().get_contact_t();
@@ -112,51 +91,81 @@ namespace card {
         }
     }
 
+	auto init_callback() -> void {
+
+	    // debug("Start Logic Analyzer");
+	    // HAL_Delay(5000);
+	    const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
+        const auto ts_cs_pin = GPIOPin(GPIOA, GPIO_PIN_4);
+	    const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
+
+	    // lcd_cs_pin.write(GPIO_PIN_SET);
+	    // ts_cs_pin.write(GPIO_PIN_SET);
+	    // rfid_cs_pin.write(GPIO_PIN_SET);
+	    //
+	    // debug("RESET PINS");
+	    // HAL_Delay(5000);
+	    // debug("Beginning Init");
+		smart_card = SmartCard(
+		    data,
+			SPI_H,
+			I2C_H,
+			INT_TIMER,
+			SPEAKER_TIMER,
+			TIM_CHANNEL_1,
+			rfid_cs_pin,
+			GPIOPin(GPIOA, GPIO_PIN_5),
+			GPIOPin(GPIOA, GPIO_PIN_11),
+			// GPIOPin(GPIOA, GPIO_PIN_12),
+			lcd_cs_pin,
+			ts_cs_pin
+		);
+		smart_card.init();
+
+	    size_t cnt{};
+
+	    debugf("flag %u\n\r", cnt++);
+
+	    BSP_LCD_Init();
+	    debugf("flag %u\n\r", cnt++);
+	    BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+	    debugf("flag %u\n\r", cnt++);
+	    BSP_LCD_Clear(LCD_COLOR_BLACK);
+	    debugf("flag %u\n\r", cnt++);
+
+	    // ts_calib();
+
+	    x_boxsize = BSP_LCD_GetYSize() / 3;
+	    debugf("flag %u\n\r", cnt++);
+	    y_boxsize = BSP_LCD_GetYSize() / 3;
+	    debugf("flag %u\n\r", cnt++);
+	    draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+	    debugf("flag %u\n\r", cnt++);
+
+	    currentcolor = LCD_COLOR_RED;
+
+	    current_page = MAIN_PAGE;
+	    touched = 0;
+	    debugf("flag %u\n\r", cnt++);
+
+		initialized = true;
+	    current_contact = Contact().get_contact_t();
+
+        debug("Initialized\n\r");
+	    // debug("END INIT CALLBACK");
+	}
+
     auto main_loop() -> void {
 	    if (!initialized) {
 	        debug("Not Initialized, Exiting");
 	        Error_Handler();
 	    }
 
-        size_t cnt;
-
-	    debugf("flag %u\n\r", cnt++);
-
-	    TS_StateTypeDef ts;
-        uint16_t x_boxsize, y_boxsize;
-        uint16_t oldcolor;
-	    debugf("flag %u\n\r", cnt++);
-
-        BSP_LCD_Init();
-	    debugf("flag %u\n\r", cnt++);
-        BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-	    debugf("flag %u\n\r", cnt++);
-        BSP_LCD_Clear(LCD_COLOR_BLACK);
-	    debugf("flag %u\n\r", cnt++);
-
-        // ts_calib();
-
-        x_boxsize = BSP_LCD_GetYSize() / 3;
-	    debugf("flag %u\n\r", cnt++);
-        y_boxsize = BSP_LCD_GetYSize() / 3;
-	    debugf("flag %u\n\r", cnt++);
-        draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
-	    debugf("flag %u\n\r", cnt++);
-
-        uint16_t currentcolor = LCD_COLOR_RED;
-
-        enum page { my_page, main_page };
-        enum page current_page;
-        current_page = main_page;
-        int touched = 0;
-	    debugf("flag %u\n\r", cnt++);
-	    debug("finished");
-
         while (true) {
             BSP_TS_GetState(&ts);
             if (ts.TouchDetected && touched == 0) {
                 switch (current_page) {
-                case main_page:
+                case MAIN_PAGE:
                     y_boxsize = BSP_LCD_GetYSize() / 3;
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
                         // touching a button
@@ -164,7 +173,7 @@ namespace card {
                             // my page
                             BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
-                            current_page = my_page;
+                            current_page = MY_PAGE;
                             draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(MY_CARD);
@@ -189,7 +198,7 @@ namespace card {
                         BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
                     }
                     break;
-                case my_page:
+                case MY_PAGE:
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
                             // back
@@ -198,7 +207,7 @@ namespace card {
                             draw_contact(current_contact, 1);
                             current_contact = get_data(BACK);
                             draw_contact(current_contact, 0);
-                            current_page = main_page;
+                            current_page = MAIN_PAGE;
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                         }
                     }
