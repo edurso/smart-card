@@ -48,7 +48,7 @@ namespace card {
         speaker{sp_tim, tim_ch},
         timer{int_tim},
         red_led{led_error_pin},
-        green_led{led_success_pin},1
+        green_led{led_success_pin},
         initialized{false}
         {
         }
