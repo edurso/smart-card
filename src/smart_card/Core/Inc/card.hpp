@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <vector>
 
 #include "card.hpp"
 #include "debug.hpp"
@@ -9,9 +10,18 @@
 #include "imu.hpp"
 #include "rfid.hpp"
 #include "speaker.hpp"
+#include "contact.hpp"
 
 
 namespace card {
+
+    enum req_t : std::uint8_t {
+        MY_CARD = 0,
+        NEXT_CARD,
+        PREV_CARD,
+        BACK,
+        RESET
+    };
 
     class SmartCard {
         RFID rfid{};
@@ -20,17 +30,38 @@ namespace card {
         TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
         GPIOPin green_led{};
+        std::size_t fired_counter{};
+        bool read_valid{};
         bool initialized{};
 
-        // For Testing Speaker
-        std::size_t cnt{};
-        std::uint32_t freq = 0;
-        bool going_up = true;
+        std::vector<Contact> contacts{};
+        std::size_t current_contact_idx{};
+        Contact current_contact{};
+        Contact me{};
 
     public:
         SmartCard() = default;
-        SmartCard(SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim, TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin, const GPIOPin reset_pin, const GPIOPin led_error_pin, const GPIOPin led_success_pin)
-        : rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim}, red_led{led_error_pin}, green_led{led_success_pin}, initialized{false} {
+        SmartCard(
+            const std::string& me,
+            SPI_HandleTypeDef* hspi,
+            I2C_HandleTypeDef* hi2c,
+            TIM_HandleTypeDef* int_tim,
+            TIM_HandleTypeDef* sp_tim,
+            const std::uint32_t tim_ch,
+            const GPIOPin select_pin,
+            const GPIOPin reset_pin,
+            const GPIOPin led_error_pin,
+            const GPIOPin led_success_pin
+            ) :
+        rfid{hspi, select_pin, reset_pin},
+        imu{hi2c},
+        speaker{sp_tim, tim_ch},
+        timer{int_tim},
+        red_led{led_error_pin},
+        green_led{led_success_pin},
+        initialized{false},
+        me{me}
+        {
         }
 
         /**
@@ -71,23 +102,42 @@ namespace card {
         /**
          * Indicates an external interrupt has been fired.
          */
-        auto fired() -> void {
+        auto motion_detected() -> void {
             imu.fired();
+
+            // Limits Over-Frequent Reading
+            if (read_valid) return;
+
             green_led.write(GPIO_PIN_RESET);
             green_led.write(GPIO_PIN_RESET);
 
             if (const auto payload = rfid.read_card()) {
                 if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
-                    debug("Card Found: \"" + data + "\"");
                     speaker.start(PLAY_SUCCESS);
                     green_led.write(GPIO_PIN_SET);
                     red_led.write(GPIO_PIN_RESET);
+                    if (const auto contact = Contact(data); contact.is_valid()) {
+                        debug("Contact Found: \"" + contact.get_name() + "\"");
+                        auto exists = false;
+                        for (const auto& c : contacts) {
+                            if (contact.same_as(c)) {
+                                exists = true;
+                                debug("Contact " + contact.get_name() + " Already Added");
+                            }
+                        }
+                        if (!exists) {
+                            contacts.push_back(contact);
+                            debug("Contact " + contact.get_name() + " Added");
+                        }
+                        debug("Card Storing " + std::to_string(contacts.size()) + " Contacts");
+                    }
                 } else {
-                    debug("Card Found Defective");
+                    debug("Contact Found, Could Not Read");
                     speaker.start(PLAY_ERROR);
                     green_led.write(GPIO_PIN_RESET);
                     red_led.write(GPIO_PIN_SET);
                 }
+                read_valid = true;
             } else {
                 debug("No Card Found");
                 speaker.start(SILENT);
@@ -96,6 +146,50 @@ namespace card {
 
         auto update_speaker() -> void {
             speaker.update();
+        }
+
+        auto update_card_read_state() -> void {
+            if (fired_counter++ > 100) {
+                read_valid = false;
+            }
+        }
+
+        auto get_data(const req_t req) -> contact_t {
+            Contact contact{}; // default contact
+
+            switch (req) {
+            case MY_CARD:
+                contact = me;
+                break;
+            case NEXT_CARD:
+                if (!contacts.empty()) {
+                    if (++current_contact_idx == contacts.size()) current_contact_idx = 0;
+                    current_contact = contacts[current_contact_idx];
+                    contact = current_contact;
+                }
+                break;
+            case PREV_CARD:
+                if (!contacts.empty()) {
+                    if (current_contact_idx == 0) {
+                        current_contact_idx = contacts.size() - 1;
+                    } else {
+                        current_contact_idx--;
+                    }
+                    current_contact = contacts[current_contact_idx];
+                    contact = current_contact;
+                }
+                break;
+            case BACK:
+                contact = current_contact;
+                break;
+            case RESET:
+                contacts.clear();
+                break;
+            default:
+                break;
+            }
+
+            return contact.get_contact_t();
         }
 
     };

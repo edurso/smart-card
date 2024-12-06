@@ -128,7 +128,8 @@ namespace card {
          * Indicate to the IMU that its interrupt has fired
          */
         auto fired() -> void {
-            debug("Fired " + std::to_string(fired_count++));
+            fired_count++;
+            // debug("Fired " + std::to_string(fired_count));
         }
 
         /**
