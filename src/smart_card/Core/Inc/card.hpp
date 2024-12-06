@@ -9,6 +9,7 @@
 #include "imu.hpp"
 #include "rfid.hpp"
 #include "speaker.hpp"
+#include "spi.hpp"
 
 
 namespace card {
@@ -20,6 +21,7 @@ namespace card {
         TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
         GPIOPin green_led{};
+        SPITransferStatus spi_status{};
         bool initialized{};
 
         // For Testing Speaker
@@ -43,7 +45,7 @@ namespace card {
             const GPIOPin led_error_pin,
             const GPIOPin led_success_pin
             ) :
-        rfid{hspi, hspi_rx, hspi_tx, use_dma, select_pin, reset_pin},
+        rfid{hspi, hspi_rx, hspi_tx, use_dma, &spi_status, select_pin, reset_pin},
         imu{hi2c},
         speaker{sp_tim, tim_ch},
         timer{int_tim},
@@ -116,6 +118,10 @@ namespace card {
 
         auto update_speaker() -> void {
             speaker.update();
+        }
+
+        auto set_spi_transfer_status(const SPITransferStatus status) -> void {
+            spi_status = status;
         }
 
     };

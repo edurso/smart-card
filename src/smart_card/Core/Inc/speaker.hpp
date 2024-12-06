@@ -10,13 +10,13 @@
 
 namespace card {
 
-    enum SpeakerStatus : uint8_t {
+    enum SpeakerStatus : std::uint8_t {
         SILENT = 0,
         PLAY_ERROR,
         PLAY_SUCCESS,
     };
 
-    enum SpeakerTone : uint16_t {
+    enum SpeakerTone : std::uint16_t {
         NO_TONE = 0,
         LOW = 150,
         MEDIUM = 350,

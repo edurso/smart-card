@@ -85,6 +85,19 @@ namespace card {
 	    smart_card.update_speaker();
 	}
 
+    auto spi_dma_callback() -> void {
+	    if (!initialized) return;
+	    debug("SPI DMA Callback");
+        smart_card.set_spi_transfer_status(COMPLETE);
+	}
+
+    auto spi_error() -> void {
+	    if (!initialized) return;
+	    debug("SPI Error Occurred");
+	    smart_card.set_spi_transfer_status(ERROR);
+	    // Error_Handler();
+	}
+
 }
 
 
@@ -108,5 +121,18 @@ extern "C" {
 		}
 	}
 
+    void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+	    card::spi_dma_callback();
+	}
+    void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+	    card::spi_dma_callback();
+	}
+    void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	    card::spi_dma_callback();
+	}
+
+    void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi) {
+	    card::spi_error();
+	}
 
 }

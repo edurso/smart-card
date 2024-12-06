@@ -1,40 +1,18 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <tuple>
+#include <vector>
 
 #include "debug.hpp"
+#include "spi.hpp"
 
 #include "main.h"
 
 
 namespace card {
-
-    /**
-     * Check that an SPI transaction executed successfully
-     * @param status The status returned from the HAL SPI transaction
-     */
-    inline auto check_spi(const HAL_StatusTypeDef status) -> void {
-        if (status != HAL_SPI_ERROR_NONE) {
-            debug("SPI Error Encountered");
-            Error_Handler();
-        }
-    }
-
-    /**
-     * Issue an SPI transaction
-     * @param hspi SPI handle to use for transaction
-     * @param addr address to access on device over SPI
-     * @return the byte received from the SPI transaction
-     */
-    inline auto transact(SPI_HandleTypeDef* hspi, const std::uint8_t addr) -> std::uint8_t {
-        uint8_t rx;
-        check_spi(HAL_SPI_TransmitReceive(hspi, &addr, &rx, 1, 0xFFFFFFFF));
-        return rx;
-    }
 
     /**
      * Represents a transaction state on the card.
@@ -161,6 +139,7 @@ namespace card {
         DMA_HandleTypeDef* hspi_tx{};
         GPIOPin select_pin{};
         GPIOPin reset_pin{};
+        SPITransferStatus* spi_status{};
         bool initialized{};
         bool use_dma{};
 
@@ -185,8 +164,8 @@ namespace card {
          */
         auto write(const std::uint8_t addr, const std::uint8_t data) const -> void {
             select();
-            transact(hspi, ((addr << 1) & 0x7E));
-            transact(hspi, data);
+            transact(hspi, spi_status, ((addr << 1) & 0x7E));
+            transact(hspi, spi_status, data);
             deselect();
         }
 
@@ -198,9 +177,9 @@ namespace card {
          */
         auto write(const std::uint8_t addr, const std::uint32_t count, const std::uint8_t *data) const -> void {
             select();
-            transact(hspi, ((addr << 1) & 0x7E));
+            transact(hspi, spi_status, ((addr << 1) & 0x7E));
             for (std::uint32_t i = 0; i < count; i++) {
-                transact(hspi, data[i]);
+                transact(hspi, spi_status, data[i]);
             }
             deselect();
         }
@@ -212,8 +191,8 @@ namespace card {
          */
         [[nodiscard]] auto read(const std::uint8_t addr) const -> std::uint8_t {
             select();
-            transact(hspi, (((addr << 1) & 0x7E) | 0x80));
-            const auto value = transact(hspi, 0x00);
+            transact(hspi, spi_status, (((addr << 1) & 0x7E) | 0x80));
+            const auto value = transact(hspi, spi_status, 0x00);
             deselect();
             return value;
         }
@@ -232,7 +211,7 @@ namespace card {
 
             select();
             count--;
-            transact(hspi, addr);
+            transact(hspi, spi_status, addr);
 
             while (index < count) {
                 if (index == 0 && rx_align) {
@@ -240,15 +219,15 @@ namespace card {
                     for ( int i = rx_align ; i <= 7 ; i++) {
                         mask |= (1 << i);
                     }
-                    const std::uint8_t value = transact(hspi, addr);
+                    const std::uint8_t value = transact(hspi, spi_status, addr);
                     data[0] = (data[index] & ~mask) | (value & mask);
                 }
                 else { // Normal case
-                    data[index] = transact(hspi, addr);
+                    data[index] = transact(hspi, spi_status, addr);
                 }
                 index++;
             }
-            data[index] = transact(hspi, 0x00);
+            data[index] = transact(hspi, spi_status, 0x00);
             deselect();
         }
 
@@ -578,6 +557,7 @@ namespace card {
             DMA_HandleTypeDef* hspi_rx,
             DMA_HandleTypeDef* hspi_tx,
             const bool use_dma,
+            SPITransferStatus* spi_status,
             const GPIOPin select_pin,
             const GPIOPin reset_pin
             ) :
@@ -585,7 +565,8 @@ namespace card {
         hspi_rx(hspi_rx),
         hspi_tx(hspi_tx),
         select_pin(select_pin),
-        reset_pin{reset_pin},
+        reset_pin(reset_pin),
+        spi_status(spi_status),
         use_dma(use_dma)
         {
             deselect();
