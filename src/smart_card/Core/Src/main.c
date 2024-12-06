@@ -38,7 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+// TODO comment this out to test just card operations
+#define SCREEN
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -197,18 +198,9 @@ void ts_calib(void) {
 
 #endif
 
-
-// typedef struct {
-//     char* name;
-//     char* email;
-//     char* phone;
-//     char* notes;
-// } contact;
-//
-// typedef enum { my_card, next_card, previous_card, back, reset } request_type;
-//
 struct contact_t current_contact;
 
+#ifdef SCREEN
 void draw_main_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) {
     BSP_LCD_SetTextColor(color);
     BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, 0, x_boxsize, y_boxsize);
@@ -305,6 +297,7 @@ void draw_contact(struct contact_t c, int erase) {
 //            current_contact.notes);
 //     return current_contact;
 // }
+#endif
 
 /* USER CODE END 0 */
 
@@ -343,6 +336,7 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     Init();
 
+#ifdef SCREEN
     TS_StateTypeDef ts;
     uint16_t x_boxsize, y_boxsize;
     uint16_t oldcolor, currentcolor;
@@ -422,6 +416,7 @@ int main(void) {
         }
         Delay(1);
     }
+#endif
     /* USER CODE END 2 */
 
     /* Infinite loop */

@@ -110,7 +110,6 @@ namespace card {
                     green_led.write(GPIO_PIN_SET);
                     red_led.write(GPIO_PIN_RESET);
                     if (const auto contact = Contact(data); contact.is_valid()) {
-                        debug("Contact Found: \"" + contact.get_name() + "\"");
                         auto exists = false;
                         for (const auto& c : contacts) {
                             if (contact.same_as(c)) {
@@ -133,6 +132,8 @@ namespace card {
                 read_valid = true;
             } else {
                 debug("No Card Found");
+                green_led.write(GPIO_PIN_RESET);
+                red_led.write(GPIO_PIN_RESET);
                 speaker.start(SILENT);
             }
         }
