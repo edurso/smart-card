@@ -3,21 +3,16 @@
 #include <cstring>
 
 #include "debug.hpp"
+#include "contact.h"
 
 
-#define MAX_SIZE 128
+// TODO this is also stored in the HPP
+#define MAX_SIZE 50
 
 
 namespace card {
 
     // "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
-
-    struct contact_t {
-        char name[MAX_SIZE];
-        char email[MAX_SIZE];
-        char phone[MAX_SIZE];
-        char notes[MAX_SIZE];
-    };
 
     class Contact {
         std::string name{};

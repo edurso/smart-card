@@ -22,10 +22,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdlib.h>
 /* BSP LCD driver */
 #include "stm32_adafruit_lcd.h"
 /* BSP TS driver */
 #include "stm32_adafruit_ts.h"
+
+#include "contact.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,8 +69,9 @@ static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-// void Init();
-// void mainApp(void);
+void Init();
+struct contact_t get_data(uint8_t req);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -194,16 +198,16 @@ void ts_calib(void) {
 #endif
 
 
-typedef struct {
-    char* name;
-    char* email;
-    char* phone;
-    char* notes;
-} contact;
-
-typedef enum { my_card, next_card, previous_card, back, reset } request_type;
-
-contact current_contact;
+// typedef struct {
+//     char* name;
+//     char* email;
+//     char* phone;
+//     char* notes;
+// } contact;
+//
+// typedef enum { my_card, next_card, previous_card, back, reset } request_type;
+//
+struct contact_t current_contact;
 
 void draw_main_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) {
     BSP_LCD_SetTextColor(color);
@@ -225,7 +229,7 @@ void draw_my_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) {
                             CENTER_MODE);
 }
 
-void draw_contact(contact c, int erase) {
+void draw_contact(struct contact_t c, int erase) {
     if (erase == 0) {
         BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
         BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
@@ -246,61 +250,61 @@ void draw_contact(contact c, int erase) {
     }
 }
 
-contact get_data(request_type request) {
-    // Allocate memory for strings (if needed)
-    current_contact.name = (char*)malloc(50 * sizeof(char));
-    current_contact.email = (char*)malloc(50 * sizeof(char));
-    current_contact.phone = (char*)malloc(15 * sizeof(char));
-    current_contact.notes = (char*)malloc(100 * sizeof(char));
-
-    switch (request) {
-    case my_card:
-        snprintf(current_contact.name, 50, "my card");
-        snprintf(current_contact.email, 50, "john.doe@example.com");
-        snprintf(current_contact.phone, 15, "+123456789");
-        snprintf(current_contact.notes, 100, "This is my card.");
-        break;
-
-    case next_card:
-        snprintf(current_contact.name, 50, "next card");
-        snprintf(current_contact.email, 50, "jane.smith@example.com");
-        snprintf(current_contact.phone, 15, "+987654321");
-        snprintf(current_contact.notes, 100, "This is the next card.");
-        break;
-
-    case previous_card:
-        snprintf(current_contact.name, 50, "previous card");
-        snprintf(current_contact.email, 50, "bob.johnson@example.com");
-        snprintf(current_contact.phone, 15, "+1122334455");
-        snprintf(current_contact.notes, 100, "This is the previous card.");
-        break;
-
-    case back:
-        snprintf(current_contact.name, 50, "back card");
-        snprintf(current_contact.email, 50, "john.doe@example.com");
-        snprintf(current_contact.phone, 15, "+123456789");
-        snprintf(current_contact.notes, 100, "This is my card.");
-        break;
-
-    case reset:
-        snprintf(current_contact.name, 50, "reset card");
-        snprintf(current_contact.email, 50, "john.doe@example.com");
-        snprintf(current_contact.phone, 15, "+123456789");
-        snprintf(current_contact.notes, 100, "This is my card.");
-        break;
-
-    default:
-        snprintf(current_contact.name, 50, "Unknown");
-        snprintf(current_contact.email, 50, "unknown@example.com");
-        snprintf(current_contact.phone, 15, "N/A");
-        snprintf(current_contact.notes, 100, "Unknown request type.");
-        break;
-    }
-
-    printf("Contact Set: %s, %s, %s, %s\n", current_contact.name, current_contact.email, current_contact.phone,
-           current_contact.notes);
-    return current_contact;
-}
+// contact get_data(request_type request) {
+//     // Allocate memory for strings (if needed)
+//     current_contact.name = (char*)malloc(50 * sizeof(char));
+//     current_contact.email = (char*)malloc(50 * sizeof(char));
+//     current_contact.phone = (char*)malloc(15 * sizeof(char));
+//     current_contact.notes = (char*)malloc(100 * sizeof(char));
+//
+//     switch (request) {
+//     case my_card:
+//         snprintf(current_contact.name, 50, "my card");
+//         snprintf(current_contact.email, 50, "john.doe@example.com");
+//         snprintf(current_contact.phone, 15, "+123456789");
+//         snprintf(current_contact.notes, 100, "This is my card.");
+//         break;
+//
+//     case next_card:
+//         snprintf(current_contact.name, 50, "next card");
+//         snprintf(current_contact.email, 50, "jane.smith@example.com");
+//         snprintf(current_contact.phone, 15, "+987654321");
+//         snprintf(current_contact.notes, 100, "This is the next card.");
+//         break;
+//
+//     case previous_card:
+//         snprintf(current_contact.name, 50, "previous card");
+//         snprintf(current_contact.email, 50, "bob.johnson@example.com");
+//         snprintf(current_contact.phone, 15, "+1122334455");
+//         snprintf(current_contact.notes, 100, "This is the previous card.");
+//         break;
+//
+//     case back:
+//         snprintf(current_contact.name, 50, "back card");
+//         snprintf(current_contact.email, 50, "john.doe@example.com");
+//         snprintf(current_contact.phone, 15, "+123456789");
+//         snprintf(current_contact.notes, 100, "This is my card.");
+//         break;
+//
+//     case reset:
+//         snprintf(current_contact.name, 50, "reset card");
+//         snprintf(current_contact.email, 50, "john.doe@example.com");
+//         snprintf(current_contact.phone, 15, "+123456789");
+//         snprintf(current_contact.notes, 100, "This is my card.");
+//         break;
+//
+//     default:
+//         snprintf(current_contact.name, 50, "Unknown");
+//         snprintf(current_contact.email, 50, "unknown@example.com");
+//         snprintf(current_contact.phone, 15, "N/A");
+//         snprintf(current_contact.notes, 100, "Unknown request type.");
+//         break;
+//     }
+//
+//     printf("Contact Set: %s, %s, %s, %s\n", current_contact.name, current_contact.email, current_contact.phone,
+//            current_contact.notes);
+//     return current_contact;
+// }
 
 /* USER CODE END 0 */
 
@@ -337,8 +341,7 @@ int main(void) {
     MX_TIM1_Init();
     MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
-    // Init();
-    // mainApp();
+    Init();
 
     TS_StateTypeDef ts;
     uint16_t x_boxsize, y_boxsize;
@@ -376,19 +379,19 @@ int main(void) {
                         current_page = my_page;
                         draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                         draw_contact(current_contact, 1);
-                        draw_contact(get_data(my_card), 0);
+                        draw_contact(get_data(MY_CARD), 0);
                     }
                     else if (ts.Y >= y_boxsize && ts.Y < y_boxsize * 2) {
                         // next
                         BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
                         draw_contact(current_contact, 1);
-                        draw_contact(get_data(next_card), 0);
+                        draw_contact(get_data(NEXT_CARD), 0);
                     }
                     else if (ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                         // previous
                         BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
                         draw_contact(current_contact, 1);
-                        draw_contact(get_data(previous_card), 0);
+                        draw_contact(get_data(PREV_CARD), 0);
                     }
                 }
                 else {
@@ -402,7 +405,7 @@ int main(void) {
                         BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                         draw_contact(current_contact, 1);
-                        draw_contact(get_data(back), 0);
+                        draw_contact(get_data(BACK), 0);
                         current_page = main_page;
                         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                     }

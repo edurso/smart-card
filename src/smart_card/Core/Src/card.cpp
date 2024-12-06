@@ -85,6 +85,10 @@ namespace card {
 	    smart_card.update_card_read_state();
 	}
 
+    auto get_data(const req_t req) -> contact_t {
+	    return smart_card.get_data(req);
+	}
+
 }
 
 
@@ -92,6 +96,10 @@ extern "C" {
 
 	void Init() {
 		card::init_callback();
+	}
+
+    contact_t get_data(const req_t req) {
+	    return card::get_data(req);
 	}
 
 	// ReSharper disable once CppParameterMayBeConstPtrOrRef

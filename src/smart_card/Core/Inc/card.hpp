@@ -11,17 +11,10 @@
 #include "rfid.hpp"
 #include "speaker.hpp"
 #include "contact.hpp"
+#include "contact.h"
 
 
 namespace card {
-
-    enum req_t : std::uint8_t {
-        MY_CARD = 0,
-        NEXT_CARD,
-        PREV_CARD,
-        BACK,
-        RESET
-    };
 
     class SmartCard {
         RFID rfid{};
@@ -182,7 +175,7 @@ namespace card {
             case BACK:
                 contact = current_contact;
                 break;
-            case RESET:
+            case RESET_CONTACTS:
                 contacts.clear();
                 break;
             default:
