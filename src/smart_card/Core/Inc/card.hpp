@@ -63,9 +63,10 @@ namespace card {
         green_led{led_success_pin},
         lcd_cs_pin{lcd_cs_pin},
         ts_cs_pin{ts_cs_pin},
-        initialized{false},
-        me{me}
+        initialized{false}
         {
+            this->me = Contact(me);
+            debug("SmartCard initialized for " + this->me.get_name());
         }
 
         /**
@@ -171,6 +172,11 @@ namespace card {
         auto get_data(const req_t req) -> contact_t {
             Contact contact{}; // default contact
 
+            // For testing
+            // me = Contact("Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|Some Random EECS373 Student|~");
+            // contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
+            // contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
+
             switch (req) {
             case MY_CARD:
                 contact = me;
@@ -203,6 +209,8 @@ namespace card {
                 break;
             }
 
+            // debug("me is " + me.get_name());
+            // debug("returning " + contact.get_name());
             return contact.get_contact_t();
         }
 

@@ -49,8 +49,8 @@ namespace card {
 	}
 
     auto get_data(const req_t req) -> contact_t {
-	    return Contact().get_contact_t();
-	    if (!initialized) return Contact().get_contact_t();
+	    // return Contact().get_contact_t();
+	    // if (!initialized) return Contact().get_contact_t();
 	    return smart_card.get_data(req);
 	}
 
@@ -65,6 +65,10 @@ namespace card {
         BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, y_boxsize * 2, y_boxsize, y_boxsize);
         BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
                                 (uint8_t*)"PREVIOUS", CENTER_MODE);
+
+	    // BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize - x_boxsize, BSP_LCD_GetYSize() - y_boxsize, x_boxsize, y_boxsize);
+	    // BSP_LCD_DisplayStringAt(x_boxsize * 0.75, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2, (uint8_t*)"RESET",
+     //                            CENTER_MODE);
     }
 
     auto draw_my_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) -> void {
@@ -92,10 +96,10 @@ namespace card {
     }
 
     auto main_loop() -> void {
-	    if (!initialized) {
-	        debug("Not Initialized, Exiting");
-	        Error_Handler();
-	    }
+	    // if (!initialized) {
+	    //     debug("Not Initialized, Exiting");
+	    //     Error_Handler();
+	    // }
 
 	    TS_StateTypeDef ts;
         uint16_t x_boxsize, y_boxsize;
@@ -133,19 +137,22 @@ namespace card {
                             current_page = my_page;
                             draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                             draw_contact(current_contact, 1);
-                            draw_contact(get_data(MY_CARD), 0);
+                            current_contact = get_data(MY_CARD);
+                            draw_contact(current_contact, 0);
                         }
                         else if (ts.Y >= y_boxsize && ts.Y < y_boxsize * 2) {
                             // next
                             BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
                             draw_contact(current_contact, 1);
-                            draw_contact(get_data(NEXT_CARD), 0);
+                            current_contact = get_data(NEXT_CARD);
+                            draw_contact(current_contact, 0);
                         }
                         else if (ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                             // previous
                             BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
                             draw_contact(current_contact, 1);
-                            draw_contact(get_data(PREV_CARD), 0);
+                            current_contact = get_data(PREV_CARD);
+                            draw_contact(current_contact, 0);
                         }
                     }
                     else {
@@ -159,7 +166,8 @@ namespace card {
                             BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                             draw_contact(current_contact, 1);
-                            draw_contact(get_data(BACK), 0);
+                            current_contact = get_data(BACK);
+                            draw_contact(current_contact, 0);
                             current_page = main_page;
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                         }
@@ -232,21 +240,17 @@ extern "C" {
         card::main_loop();
 	}
 
- //    contact_t get_data(const req_t req) {
-	//     return card::get_data(req);
-	// }
-
 	// ReSharper disable once CppParameterMayBeConstPtrOrRef
 	void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
 		if (htim == INT_TIMER) {
-			// card::noise_callback();
+			card::noise_callback();
 		}
 	}
 
 	// ReSharper disable once CppParameterMayBeConst
 	void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == GPIO_PIN_1) {
-			// card::imu_interrupt_callback();
+			card::imu_interrupt_callback();
 		}
 	}
 
