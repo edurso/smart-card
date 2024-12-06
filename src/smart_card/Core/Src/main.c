@@ -39,7 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 // TODO comment this out to test just card operations
-// #define SCREEN
+#define SCREEN
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -334,7 +334,7 @@ int main(void) {
     MX_TIM1_Init();
     MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
-    Init();
+    // Init();
 
 #ifdef SCREEN
     TS_StateTypeDef ts;

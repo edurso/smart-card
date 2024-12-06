@@ -88,6 +88,7 @@ namespace card {
 	}
 
     auto get_data(const req_t req) -> contact_t {
+	    if (!initialized) return Contact().get_contact_t();
 	    return smart_card.get_data(req);
 	}
 
