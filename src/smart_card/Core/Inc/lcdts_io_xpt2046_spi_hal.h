@@ -126,7 +126,7 @@ void LCD_IO_DmaRxCpltCallback(SPI_HandleTypeDef* hspi);
      note:
    - on my LCDs the read speed is lower than the write speed
    - on my LCDs the touchscreen speed is lower than the lcd speed */
-#define LCD_SPI_SPD_WRITE 1
+#define LCD_SPI_SPD_WRITE 0
 #define LCD_SPI_SPD_READ 4
 #define TS_SPI_SPD 4
 
