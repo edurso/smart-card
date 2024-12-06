@@ -21,6 +21,7 @@ namespace card {
 	SmartCard smart_card;
 	bool initialized{};
 	bool write{};
+    contact_t current_contact{};
 
     // Format: "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
     // const auto data = "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~";
@@ -44,6 +45,137 @@ namespace card {
 		);
 		smart_card.init();
 		initialized = true;
+	    current_contact = Contact().get_contact_t();
+	}
+
+    auto get_data(const req_t req) -> contact_t {
+	    return Contact().get_contact_t();
+	    if (!initialized) return Contact().get_contact_t();
+	    return smart_card.get_data(req);
+	}
+
+    auto draw_main_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) -> void{
+        BSP_LCD_SetTextColor(color);
+        BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, 0, x_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2, (uint8_t*)"MY INFO",
+                                CENTER_MODE);
+        BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, y_boxsize, x_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
+                                (uint8_t*)"NEXT", CENTER_MODE);
+        BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, y_boxsize * 2, y_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
+                                (uint8_t*)"PREVIOUS", CENTER_MODE);
+    }
+
+    auto draw_my_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) -> void {
+        BSP_LCD_SetTextColor(color);
+        BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, 0, x_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2, (uint8_t*)"BACK",
+                                CENTER_MODE);
+    }
+
+    auto draw_contact(contact_t c, int erase) -> void {
+        if (erase == 0) {
+            BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 2, (uint8_t*)c.email, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 3, (uint8_t*)c.phone, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 4, (uint8_t*)c.notes, CENTER_MODE);
+        }
+        else {
+            BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 2, (uint8_t*)c.email, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 3, (uint8_t*)c.phone, CENTER_MODE);
+            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 4, (uint8_t*)c.notes, CENTER_MODE);
+        }
+    }
+
+    auto main_loop() -> void {
+	    if (!initialized) {
+	        debug("Not Initialized, Exiting");
+	        Error_Handler();
+	    }
+
+	    TS_StateTypeDef ts;
+        uint16_t x_boxsize, y_boxsize;
+        uint16_t oldcolor;
+
+        BSP_LCD_Init();
+        BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
+        BSP_LCD_Clear(LCD_COLOR_BLACK);
+
+        // ts_calib();
+
+        x_boxsize = BSP_LCD_GetYSize() / 3;
+        y_boxsize = BSP_LCD_GetYSize() / 3;
+        draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+
+        uint16_t currentcolor = LCD_COLOR_RED;
+
+        enum page { my_page, main_page };
+        enum page current_page;
+        current_page = main_page;
+        int touched = 0;
+
+        while (true) {
+            BSP_TS_GetState(&ts);
+            if (ts.TouchDetected && touched == 0) {
+                switch (current_page) {
+                case main_page:
+                    y_boxsize = BSP_LCD_GetYSize() / 3;
+                    if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
+                        // touching a button
+                        if (ts.Y >= 0 && ts.Y < y_boxsize) {
+                            // my page
+                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
+                            draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+                            current_page = my_page;
+                            draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+                            draw_contact(current_contact, 1);
+                            draw_contact(get_data(MY_CARD), 0);
+                        }
+                        else if (ts.Y >= y_boxsize && ts.Y < y_boxsize * 2) {
+                            // next
+                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
+                            draw_contact(current_contact, 1);
+                            draw_contact(get_data(NEXT_CARD), 0);
+                        }
+                        else if (ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
+                            // previous
+                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
+                            draw_contact(current_contact, 1);
+                            draw_contact(get_data(PREV_CARD), 0);
+                        }
+                    }
+                    else {
+                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
+                    }
+                    break;
+                case my_page:
+                    if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
+                        if (ts.Y >= 0 && ts.Y < y_boxsize) {
+                            // back
+                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
+                            draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+                            draw_contact(current_contact, 1);
+                            draw_contact(get_data(BACK), 0);
+                            current_page = main_page;
+                            draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+                        }
+                    }
+                    else {
+                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
+                    }
+                    break;
+                }
+                touched = 1;
+            }
+            if (!ts.TouchDetected) {
+                touched = 0;
+            }
+            HAL_Delay(1);
+        }
 	}
 
     auto write_card() -> void {
@@ -87,35 +219,34 @@ namespace card {
 	    smart_card.update_card_read_state();
 	}
 
-    auto get_data(const req_t req) -> contact_t {
-	    if (!initialized) return Contact().get_contact_t();
-	    return smart_card.get_data(req);
-	}
-
 }
 
 
 extern "C" {
 
-	void Init() {
+	void init() {
 		card::init_callback();
 	}
 
-    contact_t get_data(const req_t req) {
-	    return card::get_data(req);
+    void loop() {
+        card::main_loop();
 	}
+
+ //    contact_t get_data(const req_t req) {
+	//     return card::get_data(req);
+	// }
 
 	// ReSharper disable once CppParameterMayBeConstPtrOrRef
 	void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
 		if (htim == INT_TIMER) {
-			card::noise_callback();
+			// card::noise_callback();
 		}
 	}
 
 	// ReSharper disable once CppParameterMayBeConst
 	void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == GPIO_PIN_1) {
-			card::imu_interrupt_callback();
+			// card::imu_interrupt_callback();
 		}
 	}
 

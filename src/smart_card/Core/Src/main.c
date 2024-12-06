@@ -39,7 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 // TODO comment this out to test just card operations
-#define SCREEN
+// #define SCREEN
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,8 +70,9 @@ static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-void Init();
-struct contact_t get_data(uint8_t req);
+void init();
+void loop();
+// struct contact_t get_data(uint8_t req);
 
 /* USER CODE END PFP */
 
@@ -334,7 +335,8 @@ int main(void) {
     MX_TIM1_Init();
     MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
-    // Init();
+    init();
+    loop();
 
 #ifdef SCREEN
     TS_StateTypeDef ts;

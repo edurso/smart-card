@@ -13,10 +13,15 @@
 #include "contact.hpp"
 #include "contact.h"
 
+#include "stm32_adafruit_lcd.h"
+#include "stm32_adafruit_ts.h"
+
 
 namespace card {
 
     class SmartCard {
+        static constexpr std::size_t DOUBLE_READ_DELAY = 2000;
+
         RFID rfid{};
         IMU imu{};
         Speaker speaker{};
@@ -158,7 +163,7 @@ namespace card {
         }
 
         auto update_card_read_state() -> void {
-            if (fired_counter++ > 100) {
+            if (fired_counter++ > DOUBLE_READ_DELAY) {
                 read_valid = false;
             }
         }
