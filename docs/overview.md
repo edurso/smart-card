@@ -1,5 +1,11 @@
 # System Overview
 
+## TODO
+
+- [ ] Battery? Mobile Battery?
+- [ ] Talk To Lab About How To Do DMA
+- [ ] Figure Out Packaging
+
 ## Component List
 
 | Component               | Device Name | Protocol | Status |
@@ -8,8 +14,8 @@
 | NFC Tags                | RC522       | SPI      | ✅      |
 | LCD Touchscreen Display | ILI9488     | SPI      |        |
 | IMU                     | GY511       | I2C      | ✅      |
-| Speaker                 | -           | DAC      |        |
-| LEDs                    | -           | GPIO     |        |
+| Speaker                 | -           | DAC      | ✅      |
+| LEDs                    | -           | GPIO     | ✅      |
 | Battery                 | -           | -        |        |
 | Debug                   | -           | UART     | ✅      |
 
