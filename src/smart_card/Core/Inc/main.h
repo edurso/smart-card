@@ -61,8 +61,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define RFID_CS_Pin GPIO_PIN_0
 #define RFID_CS_GPIO_Port GPIOA
-#define SPI1_SCK_Pin GPIO_PIN_1
-#define SPI1_SCK_GPIO_Port GPIOA
+#define SPI_SCK_Pin GPIO_PIN_1
+#define SPI_SCK_GPIO_Port GPIOA
 #define DEBUG_TX_Pin GPIO_PIN_2
 #define DEBUG_TX_GPIO_Port GPIOA
 #define DEBUG_RX_Pin GPIO_PIN_3
@@ -71,10 +71,10 @@ void Error_Handler(void);
 #define TS_CS_GPIO_Port GPIOA
 #define RFID_RST_Pin GPIO_PIN_5
 #define RFID_RST_GPIO_Port GPIOA
-#define SPI1_MISO_Pin GPIO_PIN_6
-#define SPI1_MISO_GPIO_Port GPIOA
-#define SPI1_MOSI_Pin GPIO_PIN_7
-#define SPI1_MOSI_GPIO_Port GPIOA
+#define SPI_MISO_Pin GPIO_PIN_6
+#define SPI_MISO_GPIO_Port GPIOA
+#define SPI_MOSI_Pin GPIO_PIN_7
+#define SPI_MOSI_GPIO_Port GPIOA
 #define LCD_RST_Pin GPIO_PIN_0
 #define LCD_RST_GPIO_Port GPIOB
 #define IMU_INT_Pin GPIO_PIN_1
@@ -90,12 +90,12 @@ void Error_Handler(void);
 #define LED_ERR_GPIO_Port GPIOA
 #define LCD_RS_Pin GPIO_PIN_12
 #define LCD_RS_GPIO_Port GPIOA
-#define SPI_SCK_Pin GPIO_PIN_3
-#define SPI_SCK_GPIO_Port GPIOB
-#define SPI_MISO_Pin GPIO_PIN_4
-#define SPI_MISO_GPIO_Port GPIOB
-#define SPI_MOSI_Pin GPIO_PIN_5
-#define SPI_MOSI_GPIO_Port GPIOB
+#define RF_SPI_SCK_Pin GPIO_PIN_3
+#define RF_SPI_SCK_GPIO_Port GPIOB
+#define RF_SPI_MISO_Pin GPIO_PIN_4
+#define RF_SPI_MISO_GPIO_Port GPIOB
+#define RF_SPI_MOSI_Pin GPIO_PIN_5
+#define RF_SPI_MOSI_GPIO_Port GPIOB
 #define LCD_CS_Pin GPIO_PIN_7
 #define LCD_CS_GPIO_Port GPIOB
 
