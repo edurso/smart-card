@@ -107,6 +107,7 @@ int main(void) {
     MX_TIM1_Init();
     MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
+    HAL_Delay(5000);
     init();
     loop();
     /* USER CODE END 2 */

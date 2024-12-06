@@ -29,6 +29,20 @@ namespace card {
     // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
 
 	auto init_callback() -> void {
+
+	    debug("Start Logic Analyzer");
+	    HAL_Delay(5000);
+	    const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
+        const auto ts_cs_pin = GPIOPin(GPIOB, GPIO_PIN_4);
+	    const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
+
+	    lcd_cs_pin.write(GPIO_PIN_SET);
+	    ts_cs_pin.write(GPIO_PIN_SET);
+	    rfid_cs_pin.write(GPIO_PIN_SET);
+
+	    debug("RESET PINS");
+	    HAL_Delay(5000);
+	    debug("Beginning Init");
 		smart_card = SmartCard(
 		    data,
 			SPI_H,
@@ -36,16 +50,17 @@ namespace card {
 			INT_TIMER,
 			SPEAKER_TIMER,
 			TIM_CHANNEL_1,
-			GPIOPin(GPIOA, GPIO_PIN_0),
+			rfid_cs_pin,
 			GPIOPin(GPIOA, GPIO_PIN_5),
 			GPIOPin(GPIOA, GPIO_PIN_11),
 			GPIOPin(GPIOA, GPIO_PIN_12),
-			GPIOPin(GPIOB, GPIO_PIN_7),
-			GPIOPin(GPIOB, GPIO_PIN_4)
+			lcd_cs_pin,
+			ts_cs_pin
 		);
 		smart_card.init();
 		initialized = true;
 	    current_contact = Contact().get_contact_t();
+	    debug("END INIT CALLBACK");
 	}
 
     auto get_data(const req_t req) -> contact_t {
@@ -100,7 +115,8 @@ namespace card {
 	    //     debug("Not Initialized, Exiting");
 	    //     Error_Handler();
 	    // }
-
+	    HAL_Delay(5000);
+	    debug("START MAIN LOOP");
 	    TS_StateTypeDef ts;
         uint16_t x_boxsize, y_boxsize;
         uint16_t oldcolor;
