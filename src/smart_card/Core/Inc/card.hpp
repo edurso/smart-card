@@ -42,20 +42,20 @@ namespace card {
     public:
         SmartCard() = default;
         SmartCard(
-            const std::string& me//,
-            // SPI_HandleTypeDef* hspi,
+            const std::string& me,
+            SPI_HandleTypeDef* hspi,
             // I2C_HandleTypeDef* hi2c,
             // TIM_HandleTypeDef* int_tim,
             // TIM_HandleTypeDef* sp_tim,
             // const std::uint32_t tim_ch,
-            // const GPIOPin select_pin,
-            // const GPIOPin reset_pin,
+            const GPIOPin select_pin,
+            const GPIOPin reset_pin
             // const GPIOPin led_error_pin
             // const GPIOPin led_success_pin,
             // const GPIOPin lcd_cs_pin,
             // const GPIOPin ts_cs_pin
             ) :
-        // rfid{hspi, select_pin, reset_pin},
+        rfid{hspi, select_pin, reset_pin}, // BAD
         // imu{hi2c},
         // speaker{sp_tim, tim_ch},
         // timer{int_tim},
@@ -81,15 +81,15 @@ namespace card {
             // check(HAL_TIM_Base_Start_IT(timer));
 
             // Initialize RFID Module
-            debug("Initializing RFID...");
+            // debug("Initializing RFID...");
             // rfid.init();
 
             // Initialize IMU
-            debug("Initializing IMU...");
+            // debug("Initializing IMU...");
             // imu.init();
 
             // Initialize Speaker
-            debug("Initializing Speaker...");
+            // debug("Initializing Speaker...");
             // speaker.init();
 
             debug("Adding some contacts...");

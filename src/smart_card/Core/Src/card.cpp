@@ -7,14 +7,14 @@
 // extern TIM_HandleTypeDef htim7; // 100 Hz
 
 extern SPI_HandleTypeDef hspi1;
-// extern SPI_HandleTypeDef hspi3;
+extern SPI_HandleTypeDef hspi3;
 // extern I2C_HandleTypeDef hi2c1;
 
 // Rename handles
 // #define SPEAKER_TIMER &htim1
 // #define INT_TIMER &htim7
 #define LCD_SPI_H &hspi1
-// #define SPI_H &hspi3
+#define SPI_H &hspi3
 // #define I2C_H &hi2c1
 
 
@@ -91,33 +91,32 @@ namespace card {
     }
 
     auto init_callback() -> void {
+        // size_t cnt{};
 
+        // debugf("flag %u\n\r", cnt++);
 
-        size_t cnt{};
-
-        debugf("flag %u\n\r", cnt++);
-
+        debug("Initializing LCD...");
         BSP_LCD_Init();
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
         BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
         BSP_LCD_Clear(LCD_COLOR_BLACK);
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
 
         // ts_calib();
 
         x_boxsize = BSP_LCD_GetYSize() / 3;
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
         y_boxsize = BSP_LCD_GetYSize() / 3;
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
 
         currentcolor = LCD_COLOR_RED;
 
         current_page = MAIN_PAGE;
         touched = 0;
-        debugf("flag %u\n\r", cnt++);
+        // debugf("flag %u\n\r", cnt++);
 
         initialized = true;
         current_contact = Contact().get_contact_t();
@@ -127,6 +126,7 @@ namespace card {
         const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
         const auto ts_cs_pin = GPIOPin(GPIOA, GPIO_PIN_4);
         const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
+        const auto rfid_rst_pin = GPIOPin(GPIOA, GPIO_PIN_5);
 
         // lcd_cs_pin.write(GPIO_PIN_SET);
         // ts_cs_pin.write(GPIO_PIN_SET);
@@ -136,14 +136,14 @@ namespace card {
         // HAL_Delay(5000);
         // debug("Beginning Init");
         smart_card = SmartCard(
-            data//,
-            // SPI_H,
+            data,
+            SPI_H,
             // I2C_H,
             // INT_TIMER,
             // SPEAKER_TIMER,
             // TIM_CHANNEL_1,
-            // rfid_cs_pin,
-            // GPIOPin(GPIOA, GPIO_PIN_5),
+            rfid_cs_pin,
+            rfid_rst_pin
             // GPIOPin(GPIOA, GPIO_PIN_11)
             // lcd_cs_pin,
             // ts_cs_pin
