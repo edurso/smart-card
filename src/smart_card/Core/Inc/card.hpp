@@ -9,9 +9,9 @@
 #include "debug.hpp"
 #include "gpio.hpp"
 #include "hw.hpp"
-// #include "imu.hpp"
+#include "imu.hpp"
 #include "rfid.hpp"
-// #include "speaker.hpp"
+#include "speaker.hpp"
 
 #include "stm32_adafruit_lcd.h"
 #include "stm32_adafruit_ts.h"
@@ -23,9 +23,9 @@ namespace card {
         static constexpr std::size_t DOUBLE_READ_DELAY = 2000;
 
         RFID rfid{};
-        // IMU imu{};
-        // Speaker speaker{};
-        // TIM_HandleTypeDef* timer{};
+        IMU imu{};
+        Speaker speaker{};
+        TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
         // GPIOPin green_led{};
         // GPIOPin lcd_cs_pin{};
@@ -44,10 +44,10 @@ namespace card {
         SmartCard(
             const std::string& me,
             SPI_HandleTypeDef* hspi,
-            // I2C_HandleTypeDef* hi2c,
-            // TIM_HandleTypeDef* int_tim,
-            // TIM_HandleTypeDef* sp_tim,
-            // const std::uint32_t tim_ch,
+            I2C_HandleTypeDef* hi2c,
+            TIM_HandleTypeDef* int_tim,
+            TIM_HandleTypeDef* sp_tim,
+            const std::uint32_t tim_ch,
             const GPIOPin select_pin,
             const GPIOPin reset_pin
             // const GPIOPin led_error_pin
@@ -56,9 +56,9 @@ namespace card {
             // const GPIOPin ts_cs_pin
             ) :
         rfid{hspi, select_pin, reset_pin}, // BAD
-        // imu{hi2c},
-        // speaker{sp_tim, tim_ch},
-        // timer{int_tim},
+        imu{hi2c},
+        speaker{sp_tim, tim_ch},
+        timer{int_tim},
         // red_led{led_error_pin},
         // green_led{led_success_pin},
         // lcd_cs_pin{lcd_cs_pin},
@@ -78,24 +78,24 @@ namespace card {
             debug("Initializing...");
 
             // Start Timer Interrupts
-            // check(HAL_TIM_Base_Start_IT(timer));
+            check(HAL_TIM_Base_Start_IT(timer));
 
             // Initialize RFID Module
-            // debug("Initializing RFID...");
-            // rfid.init();
+            debug("Initializing RFID...");
+            rfid.init();
 
             // Initialize IMU
-            // debug("Initializing IMU...");
-            // imu.init();
+            debug("Initializing IMU...");
+            imu.init();
 
             // Initialize Speaker
-            // debug("Initializing Speaker...");
-            // speaker.init();
+            debug("Initializing Speaker...");
+            speaker.init();
 
-            debug("Adding some contacts...");
-            contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
-            contacts.emplace_back("Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Some Random EECS373 Student|~");
-            contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
+            // debug("Adding some contacts...");
+            // contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
+            // contacts.emplace_back("Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Some Random EECS373 Student|~");
+            // contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
 
             initialized = true;
         }
@@ -116,7 +116,7 @@ namespace card {
         auto motion_detected() -> void {
             if (!initialized) return;
 
-            // imu.fired();
+            imu.fired();
             // const auto lcd_cs_state = lcd_cs_pin.read();
             // const auto ts_cs_state = ts_cs_pin.read();
             // lcd_cs_pin.write(GPIO_PIN_SET);
@@ -130,7 +130,7 @@ namespace card {
 
                 if (const auto payload = rfid.read_card()) {
                     if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
-                        // speaker.start(PLAY_SUCCESS);
+                        speaker.start(PLAY_SUCCESS);
                         // green_led.write(GPIO_PIN_SET);
                         red_led.write(GPIO_PIN_RESET);
                         if (const auto contact = Contact(data); contact.is_valid()) {
@@ -149,7 +149,7 @@ namespace card {
                         }
                     } else {
                         debug("Contact Found, Could Not Read");
-                        // speaker.start(PLAY_ERROR);
+                        speaker.start(PLAY_ERROR);
                         // green_led.write(GPIO_PIN_RESET);
                         red_led.write(GPIO_PIN_SET);
                     }
@@ -158,7 +158,7 @@ namespace card {
                     debug("No Card Found");
                     // green_led.write(GPIO_PIN_RESET);
                     red_led.write(GPIO_PIN_RESET);
-                    // speaker.start(SILENT);
+                    speaker.start(SILENT);
                 }
 
             }
@@ -168,7 +168,7 @@ namespace card {
         }
 
         auto update_speaker() -> void {
-            // speaker.update();
+            speaker.update();
         }
 
         auto update_card_read_state() -> void {

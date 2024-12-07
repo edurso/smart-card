@@ -69,8 +69,6 @@ void Error_Handler(void);
 #define DEBUG_RX_GPIO_Port GPIOA
 #define TS_CS_Pin GPIO_PIN_4
 #define TS_CS_GPIO_Port GPIOA
-#define RFID_RST_Pin GPIO_PIN_5
-#define RFID_RST_GPIO_Port GPIOA
 #define SPI_MISO_Pin GPIO_PIN_6
 #define SPI_MISO_GPIO_Port GPIOA
 #define SPI_MOSI_Pin GPIO_PIN_7
@@ -79,10 +77,11 @@ void Error_Handler(void);
 #define LCD_RST_GPIO_Port GPIOB
 #define IMU_INT_Pin GPIO_PIN_1
 #define IMU_INT_GPIO_Port GPIOB
+#define IMU_INT_EXTI_IRQn EXTI1_IRQn
 #define BUZ_WV_Pin GPIO_PIN_8
 #define BUZ_WV_GPIO_Port GPIOA
-#define LED_ERR_Pin GPIO_PIN_11
-#define LED_ERR_GPIO_Port GPIOA
+#define RFID_RST_Pin GPIO_PIN_11
+#define RFID_RST_GPIO_Port GPIOA
 #define LCD_RS_Pin GPIO_PIN_12
 #define LCD_RS_GPIO_Port GPIOA
 #define LCD_CS_Pin GPIO_PIN_7
