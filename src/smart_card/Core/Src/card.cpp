@@ -247,7 +247,6 @@ namespace card {
         if (!initialized)
             return;
 
-        // debug("this should not happen, you screwed up");
         // NOTE disable on write_card() call
         smart_card.update_speaker();
         smart_card.update_card_read_state();
