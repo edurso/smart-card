@@ -26,10 +26,7 @@ namespace card {
         IMU imu{};
         Speaker speaker{};
         TIM_HandleTypeDef* timer{};
-        GPIOPin red_led{};
-        // GPIOPin green_led{};
-        // GPIOPin lcd_cs_pin{};
-        // GPIOPin ts_cs_pin{};
+        // GPIOPin red_led{};
         std::size_t fired_counter{};
         bool read_valid{};
         bool initialized{};
@@ -51,31 +48,21 @@ namespace card {
             const GPIOPin select_pin,
             const GPIOPin reset_pin
             // const GPIOPin led_error_pin
-            // const GPIOPin led_success_pin,
-            // const GPIOPin lcd_cs_pin,
-            // const GPIOPin ts_cs_pin
-            ) :
-        rfid{hspi, select_pin, reset_pin}, // BAD
+        ) :
+        rfid{hspi, select_pin, reset_pin},
         imu{hi2c},
         speaker{sp_tim, tim_ch},
         timer{int_tim},
         // red_led{led_error_pin},
-        // green_led{led_success_pin},
-        // lcd_cs_pin{lcd_cs_pin},
-        // ts_cs_pin{ts_cs_pin},
         initialized{false}
         {
             this->me = Contact(me);
-            debug("\n\r------------------------------------------\n\rSmartCard initialized for " + this->me.get_name());
-            // HAL_Delay(5000);
         }
 
         /**
          * Initialize the SmartCard
          */
         auto init() -> void {
-            debug("\n");
-            debug("Initializing...");
 
             // Start Timer Interrupts
             check(HAL_TIM_Base_Start_IT(timer));
@@ -92,12 +79,8 @@ namespace card {
             debug("Initializing Speaker...");
             speaker.init();
 
-            // debug("Adding some contacts...");
-            // contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
-            // contacts.emplace_back("Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Some Random EECS373 Student|~");
-            // contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
-
             initialized = true;
+            debug("Initialized SmartCard for " + this->me.get_name());
         }
 
         /**
@@ -117,22 +100,16 @@ namespace card {
             if (!initialized) return;
 
             imu.fired();
-            // const auto lcd_cs_state = lcd_cs_pin.read();
-            // const auto ts_cs_state = ts_cs_pin.read();
-            // lcd_cs_pin.write(GPIO_PIN_SET);
-            // ts_cs_pin.write(GPIO_PIN_SET);
 
             // Limits Over-Frequent Reading
             if (!read_valid) {
 
-                // green_led.write(GPIO_PIN_RESET);
-                red_led.write(GPIO_PIN_RESET);
+                // red_led.write(GPIO_PIN_RESET);
 
                 if (const auto payload = rfid.read_card()) {
                     if (const auto& [transaction, data] = *payload; transaction == SUCCESS) {
                         speaker.start(PLAY_SUCCESS);
-                        // green_led.write(GPIO_PIN_SET);
-                        red_led.write(GPIO_PIN_RESET);
+                        // red_led.write(GPIO_PIN_RESET);
                         if (const auto contact = Contact(data); contact.is_valid()) {
                             auto exists = false;
                             for (const auto& c : contacts) {
@@ -150,21 +127,17 @@ namespace card {
                     } else {
                         debug("Contact Found, Could Not Read");
                         speaker.start(PLAY_ERROR);
-                        // green_led.write(GPIO_PIN_RESET);
-                        red_led.write(GPIO_PIN_SET);
+                        // red_led.write(GPIO_PIN_SET);
                     }
                     read_valid = true;
                 } else {
                     debug("No Card Found");
-                    // green_led.write(GPIO_PIN_RESET);
-                    red_led.write(GPIO_PIN_RESET);
+                    // red_led.write(GPIO_PIN_RESET);
                     speaker.start(SILENT);
                 }
 
             }
 
-            // lcd_cs_pin.write(lcd_cs_state);
-            // ts_cs_pin.write(ts_cs_state);
         }
 
         auto update_speaker() -> void {
@@ -179,11 +152,6 @@ namespace card {
 
         auto get_data(const req_t req) -> contact_t {
             Contact contact{}; // default contact
-
-            // For testing
-            // me = Contact("Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|Some Random EECS373 Student|~");
-            // contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
-            // contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
 
             switch (req) {
             case MY_CARD:
@@ -217,8 +185,6 @@ namespace card {
                 break;
             }
 
-            // debug("me is " + me.get_name());
-            // debug("returning " + contact.get_name());
             return contact.get_contact_t();
         }
 

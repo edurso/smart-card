@@ -91,50 +91,30 @@ namespace card {
     }
 
     auto init_callback() -> void {
-        // size_t cnt{};
-
-        // debugf("flag %u\n\r", cnt++);
-
+        debug("\n");
+        debug("Initializing...");
         debug("Initializing LCD...");
         BSP_LCD_Init();
-        // debugf("flag %u\n\r", cnt++);
         BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
-        // debugf("flag %u\n\r", cnt++);
         BSP_LCD_Clear(LCD_COLOR_BLACK);
-        // debugf("flag %u\n\r", cnt++);
 
         // ts_calib();
 
         x_boxsize = BSP_LCD_GetYSize() / 3;
-        // debugf("flag %u\n\r", cnt++);
         y_boxsize = BSP_LCD_GetYSize() / 3;
-        // debugf("flag %u\n\r", cnt++);
         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
-        // debugf("flag %u\n\r", cnt++);
 
         currentcolor = LCD_COLOR_RED;
 
         current_page = MAIN_PAGE;
         touched = 0;
-        // debugf("flag %u\n\r", cnt++);
 
         initialized = true;
         current_contact = Contact().get_contact_t();
 
-        // debug("Start Logic Analyzer");
-        // HAL_Delay(5000);
-        const auto lcd_cs_pin = GPIOPin(GPIOB, GPIO_PIN_7);
-        const auto ts_cs_pin = GPIOPin(GPIOA, GPIO_PIN_4);
         const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
         const auto rfid_rst_pin = GPIOPin(GPIOA, GPIO_PIN_11);
 
-        // lcd_cs_pin.write(GPIO_PIN_SET);
-        // ts_cs_pin.write(GPIO_PIN_SET);
-        // rfid_cs_pin.write(GPIO_PIN_SET);
-        //
-        // debug("RESET PINS");
-        // HAL_Delay(5000);
-        // debug("Beginning Init");
         smart_card = SmartCard(
             data,
             SPI_H,
@@ -145,12 +125,8 @@ namespace card {
             rfid_cs_pin,
             rfid_rst_pin
             // GPIOPin(GPIOA, GPIO_PIN_11)
-            // lcd_cs_pin,
-            // ts_cs_pin
         );
         smart_card.init();
-        debug("Initialized\n\r");
-        // debug("END INIT CALLBACK");
     }
 
     auto main_loop() -> void {
@@ -168,7 +144,7 @@ namespace card {
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
                         // touching a button
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
-                            debug("PRESSED MY PAGE");
+                            // debug("PRESSED MY PAGE");
                             // my page
                             BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
