@@ -2,8 +2,10 @@
 
 ## TODO
 
+- [ ] Add Reset Button
+- [ ] When Card Read in Interrupt, Update Screen Immediately
+- [ ] DMA for LCD?
 - [ ] Battery? Mobile Battery?
-- [ ] Talk To Lab About How To Do DMA
 - [ ] Figure Out Packaging
 
 ## Component List
