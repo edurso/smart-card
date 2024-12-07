@@ -12,7 +12,7 @@
 |-------------------------|-------------|----------|--------|
 | STM32                   | STM32L432KC | -        | ✅      |
 | NFC Tags                | RC522       | SPI      | ✅      |
-| LCD Touchscreen Display | ILI9488     | SPI      |        |
+| LCD Touchscreen Display | ILI9488     | SPI      | ✅      |
 | IMU                     | GY511       | I2C      | ✅      |
 | Speaker                 | -           | DAC      | ✅      |
 | LEDs                    | -           | GPIO     | ✅      |
