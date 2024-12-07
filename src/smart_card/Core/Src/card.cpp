@@ -134,10 +134,19 @@ namespace card {
         // debug("RESET PINS");
         // HAL_Delay(5000);
         // debug("Beginning Init");
-        smart_card = SmartCard(data, SPI_H, I2C_H, INT_TIMER, SPEAKER_TIMER, TIM_CHANNEL_1, rfid_cs_pin,
-                               GPIOPin(GPIOA, GPIO_PIN_5), GPIOPin(GPIOA, GPIO_PIN_11),
-                               // GPIOPin(GPIOA, GPIO_PIN_12),
-                               lcd_cs_pin, ts_cs_pin);
+        smart_card = SmartCard(
+            data,
+            SPI_H,
+            I2C_H,
+            INT_TIMER,
+            SPEAKER_TIMER,
+            TIM_CHANNEL_1,
+            rfid_cs_pin,
+            GPIOPin(GPIOA, GPIO_PIN_5),
+            GPIOPin(GPIOA, GPIO_PIN_11)
+            // lcd_cs_pin,
+            // ts_cs_pin
+        );
         smart_card.init();
         debug("Initialized\n\r");
         // debug("END INIT CALLBACK");
@@ -261,6 +270,7 @@ namespace card {
         if (!initialized)
             return;
 
+        // debug("this should not happen, you screwed up");
         // NOTE disable on write_card() call
         smart_card.update_speaker();
         smart_card.update_card_read_state();
@@ -278,6 +288,7 @@ extern "C"
 
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
     void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+        // printf("error - this shouldn't happen?");
         if (htim == INT_TIMER) {
             card::noise_callback();
         }

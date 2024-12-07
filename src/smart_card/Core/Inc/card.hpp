@@ -28,8 +28,8 @@ namespace card {
         TIM_HandleTypeDef* timer{};
         GPIOPin red_led{};
         // GPIOPin green_led{};
-        GPIOPin lcd_cs_pin{};
-        GPIOPin ts_cs_pin{};
+        // GPIOPin lcd_cs_pin{};
+        // GPIOPin ts_cs_pin{};
         std::size_t fired_counter{};
         bool read_valid{};
         bool initialized{};
@@ -50,10 +50,10 @@ namespace card {
             const std::uint32_t tim_ch,
             const GPIOPin select_pin,
             const GPIOPin reset_pin,
-            const GPIOPin led_error_pin,
+            const GPIOPin led_error_pin
             // const GPIOPin led_success_pin,
-            const GPIOPin lcd_cs_pin,
-            const GPIOPin ts_cs_pin
+            // const GPIOPin lcd_cs_pin,
+            // const GPIOPin ts_cs_pin
             ) :
         rfid{hspi, select_pin, reset_pin},
         imu{hi2c},
@@ -61,13 +61,13 @@ namespace card {
         timer{int_tim},
         red_led{led_error_pin},
         // green_led{led_success_pin},
-        lcd_cs_pin{lcd_cs_pin},
-        ts_cs_pin{ts_cs_pin},
+        // lcd_cs_pin{lcd_cs_pin},
+        // ts_cs_pin{ts_cs_pin},
         initialized{false}
         {
             this->me = Contact(me);
             debug("\n\r------------------------------------------\n\rSmartCard initialized for " + this->me.get_name());
-            HAL_Delay(5000);
+            // HAL_Delay(5000);
         }
 
         /**
@@ -101,6 +101,7 @@ namespace card {
          * @return An optional card transaction. std::nullopt indicates write was not attempted.
          */
         [[nodiscard]] auto write_card(const std::string& data) -> std::optional<CardTransaction> {
+            if (!initialized) return std::nullopt;
             return rfid.write_card(data);
         }
 
@@ -108,11 +109,13 @@ namespace card {
          * Indicates an external interrupt has been fired.
          */
         auto motion_detected() -> void {
+            if (!initialized) return;
+
             imu.fired();
-            const auto lcd_cs_state = lcd_cs_pin.read();
-            const auto ts_cs_state = ts_cs_pin.read();
-            lcd_cs_pin.write(GPIO_PIN_SET);
-            ts_cs_pin.write(GPIO_PIN_SET);
+            // const auto lcd_cs_state = lcd_cs_pin.read();
+            // const auto ts_cs_state = ts_cs_pin.read();
+            // lcd_cs_pin.write(GPIO_PIN_SET);
+            // ts_cs_pin.write(GPIO_PIN_SET);
 
             // Limits Over-Frequent Reading
             if (!read_valid) {
@@ -155,8 +158,8 @@ namespace card {
 
             }
 
-            lcd_cs_pin.write(lcd_cs_state);
-            ts_cs_pin.write(ts_cs_state);
+            // lcd_cs_pin.write(lcd_cs_state);
+            // ts_cs_pin.write(ts_cs_state);
         }
 
         auto update_speaker() -> void {
