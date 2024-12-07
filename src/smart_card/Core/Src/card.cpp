@@ -3,19 +3,19 @@
 #include "main.h"
 
 // Handles defined in IOC
-extern TIM_HandleTypeDef htim1; // Variable Hz
-extern TIM_HandleTypeDef htim7; // 100 Hz
+// extern TIM_HandleTypeDef htim1; // Variable Hz
+// extern TIM_HandleTypeDef htim7; // 100 Hz
 
 extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi3;
-extern I2C_HandleTypeDef hi2c1;
+// extern SPI_HandleTypeDef hspi3;
+// extern I2C_HandleTypeDef hi2c1;
 
 // Rename handles
-#define SPEAKER_TIMER &htim1
-#define INT_TIMER &htim7
+// #define SPEAKER_TIMER &htim1
+// #define INT_TIMER &htim7
 #define LCD_SPI_H &hspi1
-#define SPI_H &hspi3
-#define I2C_H &hi2c1
+// #define SPI_H &hspi3
+// #define I2C_H &hi2c1
 
 
 namespace card {
@@ -135,15 +135,15 @@ namespace card {
         // HAL_Delay(5000);
         // debug("Beginning Init");
         smart_card = SmartCard(
-            data,
-            SPI_H,
-            I2C_H,
-            INT_TIMER,
-            SPEAKER_TIMER,
-            TIM_CHANNEL_1,
-            rfid_cs_pin,
-            GPIOPin(GPIOA, GPIO_PIN_5),
-            GPIOPin(GPIOA, GPIO_PIN_11)
+            data//,
+            // SPI_H,
+            // I2C_H,
+            // INT_TIMER,
+            // SPEAKER_TIMER,
+            // TIM_CHANNEL_1,
+            // rfid_cs_pin,
+            // GPIOPin(GPIOA, GPIO_PIN_5),
+            // GPIOPin(GPIOA, GPIO_PIN_11)
             // lcd_cs_pin,
             // ts_cs_pin
         );
@@ -287,12 +287,12 @@ extern "C"
     void loop() { card::main_loop(); }
 
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
-    void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-        // printf("error - this shouldn't happen?");
-        if (htim == INT_TIMER) {
-            card::noise_callback();
-        }
-    }
+    // void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+    //     // printf("error - this shouldn't happen?");
+    //     if (htim == INT_TIMER) {
+    //         card::noise_callback();
+    //     }
+    // }
 
     // ReSharper disable once CppParameterMayBeConst
     void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
