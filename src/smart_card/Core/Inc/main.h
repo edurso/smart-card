@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -57,6 +59,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define RFID_CS_Pin GPIO_PIN_0
+#define RFID_CS_GPIO_Port GPIOA
 #define SPI_SCK_Pin GPIO_PIN_1
 #define SPI_SCK_GPIO_Port GPIOA
 #define DEBUG_TX_Pin GPIO_PIN_2
@@ -65,12 +69,20 @@ void Error_Handler(void);
 #define DEBUG_RX_GPIO_Port GPIOA
 #define TS_CS_Pin GPIO_PIN_4
 #define TS_CS_GPIO_Port GPIOA
+#define RFID_RST_Pin GPIO_PIN_5
+#define RFID_RST_GPIO_Port GPIOA
 #define SPI_MISO_Pin GPIO_PIN_6
 #define SPI_MISO_GPIO_Port GPIOA
 #define SPI_MOSI_Pin GPIO_PIN_7
 #define SPI_MOSI_GPIO_Port GPIOA
 #define LCD_RST_Pin GPIO_PIN_0
 #define LCD_RST_GPIO_Port GPIOB
+#define IMU_INT_Pin GPIO_PIN_1
+#define IMU_INT_GPIO_Port GPIOB
+#define BUZ_WV_Pin GPIO_PIN_8
+#define BUZ_WV_GPIO_Port GPIOA
+#define LED_ERR_Pin GPIO_PIN_11
+#define LED_ERR_GPIO_Port GPIOA
 #define LCD_RS_Pin GPIO_PIN_12
 #define LCD_RS_GPIO_Port GPIOA
 #define LCD_CS_Pin GPIO_PIN_7

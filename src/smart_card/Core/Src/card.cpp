@@ -39,6 +39,7 @@ namespace card {
     // Format: "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
     // const auto data = "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~";
     const std::string data = "Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|Some Random EECS373 Student|~";
+    // const std::string data = "Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Some Random EECS373 Student|~";
     // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
 
     auto get_data(const req_t req) -> contact_t {
