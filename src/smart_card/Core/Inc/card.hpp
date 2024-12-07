@@ -92,6 +92,11 @@ namespace card {
             debug("Initializing Speaker...");
             // speaker.init();
 
+            debug("Adding some contacts...");
+            contacts.emplace_back("Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~");
+            contacts.emplace_back("Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Some Random EECS373 Student|~");
+            contacts.emplace_back("John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~");
+
             initialized = true;
         }
 
