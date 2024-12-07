@@ -5,6 +5,7 @@
 - [ ] Add Reset Button
 - [ ] When Card Read in Interrupt, Update Screen Immediately
 - [ ] DMA for LCD?
+- [ ] Make Another Unit for Demo
 - [ ] Battery? Mobile Battery?
 - [ ] Figure Out Packaging
 
