@@ -43,7 +43,8 @@ namespace card {
     // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
 
     auto get_data(const req_t req) -> contact_t {
-        if (!initialized) return Contact().get_contact_t();
+        if (!initialized)
+            return Contact().get_contact_t();
         return smart_card.get_data(req);
     }
 
@@ -58,6 +59,15 @@ namespace card {
         BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, y_boxsize * 2, y_boxsize, y_boxsize);
         BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
                                 (uint8_t*)"PREVIOUS", CENTER_MODE);
+
+        std::string text = "RESET";
+        uint16_t size = text.length();
+        uint16_t width = BSP_LCD_GetFont()->Width;
+        uint16_t xsize = (y_boxsize / width);
+        uint16_t xpos = (xsize - size) * width / 2;
+        BSP_LCD_DrawRect(0, y_boxsize * 2, y_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(xpos, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2, (uint8_t*)"RESET",
+                                LEFT_MODE);
 
         // BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize - x_boxsize, BSP_LCD_GetYSize() - y_boxsize, x_boxsize,
         // y_boxsize); BSP_LCD_DisplayStringAt(x_boxsize * 0.75, y_boxsize * 2 + y_boxsize / 2 -
@@ -114,16 +124,8 @@ namespace card {
         const auto rfid_cs_pin = GPIOPin(GPIOA, GPIO_PIN_0);
         const auto rfid_rst_pin = GPIOPin(GPIOA, GPIO_PIN_11);
 
-        smart_card = SmartCard(
-            data,
-            SPI_H,
-            I2C_H,
-            INT_TIMER,
-            SPEAKER_TIMER,
-            TIM_CHANNEL_1,
-            rfid_cs_pin,
-            rfid_rst_pin
-            // GPIOPin(GPIOA, GPIO_PIN_11)
+        smart_card = SmartCard(data, SPI_H, I2C_H, INT_TIMER, SPEAKER_TIMER, TIM_CHANNEL_1, rfid_cs_pin, rfid_rst_pin
+                               // GPIOPin(GPIOA, GPIO_PIN_11)
         );
         smart_card.init();
     }
@@ -145,7 +147,7 @@ namespace card {
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
                             // debug("PRESSED MY PAGE");
                             // my page
-                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
+                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                             current_page = MY_PAGE;
                             draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
@@ -155,28 +157,28 @@ namespace card {
                         }
                         else if (ts.Y >= y_boxsize && ts.Y < y_boxsize * 2) {
                             // next
-                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
+                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(NEXT_CARD);
                             draw_contact(current_contact, 0);
                         }
                         else if (ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                             // previous
-                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
+                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(PREV_CARD);
                             draw_contact(current_contact, 0);
                         }
                     }
                     else {
-                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
+                        //                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
                     }
                     break;
                 case MY_PAGE:
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
                             // back
-                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
+                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(BACK);
@@ -186,7 +188,7 @@ namespace card {
                         }
                     }
                     else {
-                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
+                        //                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
                     }
                     break;
                 }
