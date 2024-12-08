@@ -16,7 +16,7 @@
 #include "ts.h"
 
 //-----------------------------------------------------------------------------
-#define DMA_MINSIZE 0x0010
+#define DMA_MINSIZE 0x0000//0x0010
 #define DMA_MAXSIZE 0xFFFE
 /* note:
    - DMA_MINSIZE: if the transacion Size < DMA_MINSIZE -> not use the DMA for transaction
