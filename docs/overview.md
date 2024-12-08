@@ -3,6 +3,7 @@
 ## TODO
 
 - [ ] Add Reset Button
+- [ ] I2C GPIO Expander?
 - [ ] When Card Read in Interrupt, Update Screen Immediately
 - [ ] DMA for LCD?
 - [ ] Make Another Unit for Demo

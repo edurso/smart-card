@@ -43,8 +43,7 @@ namespace card {
     // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
 
     auto get_data(const req_t req) -> contact_t {
-        // return Contact().get_contact_t();
-        // if (!initialized) return Contact().get_contact_t();
+        if (!initialized) return Contact().get_contact_t();
         return smart_card.get_data(req);
     }
 
