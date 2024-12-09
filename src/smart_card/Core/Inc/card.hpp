@@ -190,6 +190,7 @@ namespace card {
                 break;
             case RESET_CONTACTS:
                 contacts.clear();
+                contact = Contact();
                 break;
             case REJECT_CONTACT:
                 contacts.pop_back();
