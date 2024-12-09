@@ -10,7 +10,7 @@
 | IMU                     | GY511       | I2C      | ✅      |
 | Speaker                 | -           | DAC      | ✅      |
 | LEDs                    | -           | GPIO     | ✅      |
-| Battery                 | -           | -        |        |
+| Battery                 | -           | -        | ✅      |
 | Debug                   | -           | UART     | ✅      |
 
 ## Presentation
