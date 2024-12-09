@@ -128,6 +128,7 @@ namespace card {
                                 current_page = NEW_CONTACT;
                                 contacts.push_back(contact);
                                 current_contact_idx = contacts.size() - 1;
+                                current_contact = contacts[current_contact_idx];
                                 contact_page_drawn = 0;
                                 debug("Contact " + contact.get_name() + " Added");
                             }
@@ -192,7 +193,11 @@ namespace card {
                 break;
             case REJECT_CONTACT:
                 contacts.pop_back();
-                current_contact_idx--;
+                current_contact_idx = contacts.size() - 1;
+                break;
+            case ACCEPT_CONTACT:
+                contact = current_contact;
+                break;
             default:
                 break;
             }

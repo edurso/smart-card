@@ -142,6 +142,9 @@ namespace card {
             Error_Handler();
         }
 
+        current_contact = get_data(RESET_CONTACTS);
+        draw_contact(current_contact, 0);
+
         while (true) {
             if (contact_page_drawn == 0) {
                 draw_contact_page(current_contact, current_page, x_boxsize, y_boxsize, LCD_COLOR_WHITE);
@@ -204,12 +207,15 @@ namespace card {
                         draw_contact_page(current_contact, current_page, x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                         current_page = MAIN_PAGE;
                         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+                        draw_contact(current_contact, 0);
                     }
                     else if (ts.X > BSP_LCD_GetXSize() - x_boxsize && ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                         // touching yes
                         draw_contact_page(current_contact, current_page, x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                         current_page = MAIN_PAGE;
                         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+                        current_contact = get_data(ACCEPT_CONTACT);
+                        draw_contact(current_contact, 0);
                     }
                     current_page = MAIN_PAGE;
                 }
