@@ -18,10 +18,18 @@
 
 
 namespace card {
-    enum page_t { MY_PAGE, MAIN_PAGE, NEW_CONTACT };
+
+    enum page_t {
+        MY_PAGE,
+        MAIN_PAGE,
+        NEW_CONTACT
+    };
+
     page_t current_page;
     int contact_page_drawn{};
-    auto set_current_page(page_t new_page) -> void { current_page = new_page; }
+    auto set_current_page(const page_t new_page) -> void {
+        current_page = new_page;
+    }
 
     class SmartCard {
         static constexpr std::size_t DOUBLE_READ_DELAY = 2000;
