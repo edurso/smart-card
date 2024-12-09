@@ -11,10 +11,4 @@ struct contact_t {
     char notes[MAX_SIZE];
 };
 
-enum req_t {
-    MY_CARD,
-    NEXT_CARD,
-    PREV_CARD,
-    BACK,
-    RESET_CONTACTS
-};
+enum req_t { MY_CARD, NEXT_CARD, PREV_CARD, BACK, RESET_CONTACTS, REJECT_CONTACT };

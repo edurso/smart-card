@@ -18,6 +18,10 @@
 
 
 namespace card {
+    enum page_t { MY_PAGE, MAIN_PAGE, NEW_CONTACT };
+    page_t current_page;
+    int contact_page_drawn{};
+    auto set_current_page(page_t new_page) -> void { current_page = new_page; }
 
     class SmartCard {
         static constexpr std::size_t DOUBLE_READ_DELAY = 2000;
@@ -38,24 +42,14 @@ namespace card {
 
     public:
         SmartCard() = default;
-        SmartCard(
-            const std::string& me,
-            SPI_HandleTypeDef* hspi,
-            I2C_HandleTypeDef* hi2c,
-            TIM_HandleTypeDef* int_tim,
-            TIM_HandleTypeDef* sp_tim,
-            const std::uint32_t tim_ch,
-            const GPIOPin select_pin,
-            const GPIOPin reset_pin
-            // const GPIOPin led_error_pin
-        ) :
-        rfid{hspi, select_pin, reset_pin},
-        imu{hi2c},
-        speaker{sp_tim, tim_ch},
-        timer{int_tim},
-        // red_led{led_error_pin},
-        initialized{false}
-        {
+        SmartCard(const std::string& me, SPI_HandleTypeDef* hspi, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* int_tim,
+                  TIM_HandleTypeDef* sp_tim, const std::uint32_t tim_ch, const GPIOPin select_pin,
+                  const GPIOPin reset_pin
+                  // const GPIOPin led_error_pin
+                  ) :
+            rfid{hspi, select_pin, reset_pin}, imu{hi2c}, speaker{sp_tim, tim_ch}, timer{int_tim},
+            // red_led{led_error_pin},
+            initialized{false} {
             this->me = Contact(me);
         }
 
@@ -89,7 +83,8 @@ namespace card {
          * @return An optional card transaction. std::nullopt indicates write was not attempted.
          */
         [[nodiscard]] auto write_card(const std::string& data) -> std::optional<CardTransaction> {
-            if (!initialized) return std::nullopt;
+            if (!initialized)
+                return std::nullopt;
             return rfid.write_card(data);
         }
 
@@ -97,7 +92,8 @@ namespace card {
          * Indicates an external interrupt has been fired.
          */
         auto motion_detected() -> void {
-            if (!initialized) return;
+            if (!initialized)
+                return;
 
             imu.fired();
 
@@ -119,30 +115,31 @@ namespace card {
                                 }
                             }
                             if (!exists) {
+                                set_current_page(NEW_CONTACT);
                                 contacts.push_back(contact);
+                                current_contact_idx = contacts.size() - 1;
+                                contact_page_drawn = 0;
                                 debug("Contact " + contact.get_name() + " Added");
                             }
                             debug("Card Storing " + std::to_string(contacts.size()) + " Contacts");
                         }
-                    } else {
+                    }
+                    else {
                         debug("Contact Found, Could Not Read");
                         speaker.start(PLAY_ERROR);
                         // red_led.write(GPIO_PIN_SET);
                     }
                     read_valid = true;
-                } else {
+                }
+                else {
                     debug("No Card Found");
                     // red_led.write(GPIO_PIN_RESET);
                     speaker.start(SILENT);
                 }
-
             }
-
         }
 
-        auto update_speaker() -> void {
-            speaker.update();
-        }
+        auto update_speaker() -> void { speaker.update(); }
 
         auto update_card_read_state() -> void {
             if (fired_counter++ > DOUBLE_READ_DELAY) {
@@ -159,7 +156,8 @@ namespace card {
                 break;
             case NEXT_CARD:
                 if (!contacts.empty()) {
-                    if (++current_contact_idx == contacts.size()) current_contact_idx = 0;
+                    if (++current_contact_idx == contacts.size())
+                        current_contact_idx = 0;
                     current_contact = contacts[current_contact_idx];
                     contact = current_contact;
                 }
@@ -168,7 +166,8 @@ namespace card {
                 if (!contacts.empty()) {
                     if (current_contact_idx == 0) {
                         current_contact_idx = contacts.size() - 1;
-                    } else {
+                    }
+                    else {
                         current_contact_idx--;
                     }
                     current_contact = contacts[current_contact_idx];
@@ -181,13 +180,15 @@ namespace card {
             case RESET_CONTACTS:
                 contacts.clear();
                 break;
+            case REJECT_CONTACT:
+                contacts.pop_back();
+                current_contact_idx--;
             default:
                 break;
             }
 
             return contact.get_contact_t();
         }
-
     };
 
-}
+} // namespace card

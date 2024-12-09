@@ -20,9 +20,6 @@ extern I2C_HandleTypeDef hi2c1;
 
 namespace card {
 
-
-    enum page_t { MY_PAGE, MAIN_PAGE };
-
     SmartCard smart_card;
     bool initialized{};
     bool write{};
@@ -33,8 +30,6 @@ namespace card {
     uint16_t oldcolor{};
     uint16_t currentcolor{};
     int touched{};
-
-    page_t current_page;
 
     // Format: "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
     // const auto data = "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~";
@@ -61,18 +56,11 @@ namespace card {
                                 (uint8_t*)"PREVIOUS", CENTER_MODE);
 
         std::string text = "RESET";
-        uint16_t size = text.length();
-        uint16_t width = BSP_LCD_GetFont()->Width;
-        uint16_t xsize = (y_boxsize / width);
-        uint16_t xpos = (xsize - size) * width / 2;
-        BSP_LCD_DrawRect(0, y_boxsize * 2, y_boxsize, y_boxsize);
-        BSP_LCD_DisplayStringAt(xpos, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2, (uint8_t*)"RESET",
-                                LEFT_MODE);
+        uint16_t xpos = (y_boxsize - text.length() * BSP_LCD_GetFont()->Width) / 2;
 
-        // BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize - x_boxsize, BSP_LCD_GetYSize() - y_boxsize, x_boxsize,
-        // y_boxsize); BSP_LCD_DisplayStringAt(x_boxsize * 0.75, y_boxsize * 2 + y_boxsize / 2 -
-        // BSP_LCD_GetFont()->Height / 2, (uint8_t*)"RESET",
-        //                            CENTER_MODE);
+        BSP_LCD_DrawRect(0, y_boxsize * 2, y_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(xpos, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
+                                (uint8_t*)text.data(), LEFT_MODE);
     }
 
     auto draw_my_page(uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) -> void {
@@ -82,21 +70,36 @@ namespace card {
                                 CENTER_MODE);
     }
 
+    auto draw_contact_page(page_t current_page, uint16_t x_boxsize, uint16_t y_boxsize, uint16_t color) -> void {
+        if (current_page == MAIN_PAGE) {
+            draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+        }
+        else if (current_page == MY_PAGE) {
+            draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+        }
+        BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)"Add new contact?", CENTER_MODE);
+        std::string text = "NO";
+        uint16_t xpos = (y_boxsize - text.length() * BSP_LCD_GetFont()->Width) / 2;
+        BSP_LCD_DrawRect(0, y_boxsize * 2, y_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(xpos, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
+                                (uint8_t*)text.data(), LEFT_MODE);
+
+        BSP_LCD_DrawRect(BSP_LCD_GetXSize() - x_boxsize, y_boxsize * 2, y_boxsize, y_boxsize);
+        BSP_LCD_DisplayStringAt(x_boxsize * 1.75, y_boxsize * 2 + y_boxsize / 2 - BSP_LCD_GetFont()->Height / 2,
+                                (uint8_t*)"YES", CENTER_MODE);
+    }
+
     auto draw_contact(contact_t c, int erase) -> void {
         if (erase == 0) {
             BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 2, (uint8_t*)c.email, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 3, (uint8_t*)c.phone, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 4, (uint8_t*)c.notes, CENTER_MODE);
         }
         else {
             BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 2, (uint8_t*)c.email, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 3, (uint8_t*)c.phone, CENTER_MODE);
-            BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 4, (uint8_t*)c.notes, CENTER_MODE);
         }
+        BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height, (uint8_t*)c.name, CENTER_MODE);
+        BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 2, (uint8_t*)c.email, CENTER_MODE);
+        BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 3, (uint8_t*)c.phone, CENTER_MODE);
+        BSP_LCD_DisplayStringAt(0, BSP_LCD_GetFont()->Height * 4, (uint8_t*)c.notes, CENTER_MODE);
     }
 
     auto init_callback() -> void {
@@ -117,6 +120,7 @@ namespace card {
 
         current_page = MAIN_PAGE;
         touched = 0;
+        contact_page_drawn = 1;
 
         initialized = true;
         current_contact = Contact().get_contact_t();
@@ -137,17 +141,19 @@ namespace card {
         }
 
         while (true) {
+            if (contact_page_drawn == 0) {
+                draw_contact_page(current_page, x_boxsize, y_boxsize, LCD_COLOR_WHITE);
+                contact_page_drawn = 1;
+            }
             BSP_TS_GetState(&ts);
             if (ts.TouchDetected && touched == 0) {
                 switch (current_page) {
                 case MAIN_PAGE:
                     y_boxsize = BSP_LCD_GetYSize() / 3;
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
-                        // touching a button
+                        // touching a button on the right
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
-                            // debug("PRESSED MY PAGE");
                             // my page
-                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                             current_page = MY_PAGE;
                             draw_my_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
@@ -157,28 +163,28 @@ namespace card {
                         }
                         else if (ts.Y >= y_boxsize && ts.Y < y_boxsize * 2) {
                             // next
-                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_WHITE);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(NEXT_CARD);
                             draw_contact(current_contact, 0);
                         }
                         else if (ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                             // previous
-                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_GREEN);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(PREV_CARD);
                             draw_contact(current_contact, 0);
                         }
                     }
-                    else {
-                        //                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
+                    else if (ts.X < x_boxsize && ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
+                        // touching reset button
+                        draw_contact(current_contact, 1);
+                        current_contact = get_data(RESET_CONTACTS);
+                        draw_contact(current_contact, 0);
                     }
                     break;
                 case MY_PAGE:
                     if (ts.X > BSP_LCD_GetXSize() - x_boxsize) {
                         if (ts.Y >= 0 && ts.Y < y_boxsize) {
                             // back
-                            //                            BSP_LCD_DrawPixel(ts.X, ts.Y, LCD_COLOR_BLUE);
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                             draw_contact(current_contact, 1);
                             current_contact = get_data(BACK);
@@ -187,10 +193,21 @@ namespace card {
                             draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
                         }
                     }
-                    else {
-                        //                        BSP_LCD_DrawPixel(ts.X, ts.Y, currentcolor);
-                    }
                     break;
+                case NEW_CONTACT:
+                    debug("new contact page");
+                    if (ts.X < x_boxsize && ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
+                        // touching no
+                        get_data(REJECT_CONTACT);
+                        draw_contact_page(current_page, x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+                        current_page = MAIN_PAGE;
+                    }
+                    else if (ts.X > BSP_LCD_GetXSize() - x_boxsize && ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
+                        // touching yes
+                        draw_contact_page(current_page, x_boxsize, y_boxsize, LCD_COLOR_BLACK);
+                        current_page = MAIN_PAGE;
+                    }
+                    current_page = MAIN_PAGE;
                 }
                 touched = 1;
             }
