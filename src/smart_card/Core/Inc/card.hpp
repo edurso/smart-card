@@ -196,6 +196,12 @@ namespace card {
             case REJECT_CONTACT:
                 contacts.pop_back();
                 current_contact_idx = contacts.size() - 1;
+                if (!contacts.empty()) {
+                    current_contact = contacts[current_contact_idx];
+                } else {
+                    current_contact = Contact();
+                }
+                contact = current_contact;
                 break;
             case ACCEPT_CONTACT:
                 contact = current_contact;

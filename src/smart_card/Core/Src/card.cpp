@@ -207,7 +207,7 @@ namespace card {
                     debug("new contact page");
                     if (ts.X < x_boxsize && ts.Y >= y_boxsize * 2 && ts.Y < y_boxsize * 3) {
                         // touching no
-                        get_data(REJECT_CONTACT);
+                        current_contact = get_data(REJECT_CONTACT);
                         draw_contact_page(current_contact, current_page, x_boxsize, y_boxsize, LCD_COLOR_BLACK);
                         current_page = MAIN_PAGE;
                         draw_main_page(x_boxsize, y_boxsize, LCD_COLOR_WHITE);
