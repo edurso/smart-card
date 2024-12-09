@@ -26,6 +26,7 @@ namespace card {
     };
 
     page_t current_page;
+    page_t previous_page;
     int contact_page_drawn{};
     auto set_current_page(const page_t new_page) -> void {
         current_page = new_page;
@@ -123,7 +124,8 @@ namespace card {
                                 }
                             }
                             if (!exists) {
-                                set_current_page(NEW_CONTACT);
+                                previous_page = current_page;
+                                current_page = NEW_CONTACT;
                                 contacts.push_back(contact);
                                 current_contact_idx = contacts.size() - 1;
                                 contact_page_drawn = 0;
