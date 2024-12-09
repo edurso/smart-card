@@ -33,10 +33,13 @@ namespace card {
 
     // Format: "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes|~"
     // const std::string data = "John Doe|john@doe.com|+1 (123) 567-1234|These are some notes about John|~";
-    // const std::string data = "Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|EECS373 Student, edurso.com|~";
-    const std::string data = "Alanson Sample|apsample@umich.edu|+1 (734) 763-1669|alansonsample.com|~";
+    // const std::string data = "Rick Astley|Never gonna give you up|867-5309|Never gonna let you down...|~";
+    const std::string data = "Eric D'Urso|edurso@umich.edu|+1 (734) 560-3417|EECS373 Student, edurso.com|~";
+    // const std::string data = "Alanson Sample|apsample@umich.edu|+1 (734) 763-1669|alansonsample.com|~";
     // const std::string data = "Ethan McKean|emckean@umich.edu|+1 (373) 373-4823|Website Coming Soon|~";
-    // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Some Random EECS373 Student|~";
+    // const std::string data = "Luke Nelson|lukenels@umich.edu|+1 (734) 892-6993|Quandale Dingle's #1 Fan!|~";
+
+    const bool WRITE = false;
 
     auto get_data(const req_t req) -> contact_t {
         if (!initialized)
@@ -268,8 +271,11 @@ namespace card {
         if (!initialized)
             return;
 
-        // write_card();
-        smart_card.motion_detected();
+        if (WRITE) {
+            write_card();
+        } else {
+            smart_card.motion_detected();
+        }
     }
 
     auto noise_callback() -> void {
@@ -277,8 +283,10 @@ namespace card {
             return;
 
         // NOTE disable on write_card() call
-        smart_card.update_speaker();
-        smart_card.update_card_read_state();
+        if (!WRITE) {
+            smart_card.update_speaker();
+            smart_card.update_card_read_state();
+        }
     }
 
 } // namespace card
